@@ -2,7 +2,6 @@ package com.komin.steganobot.cache;
 
 import com.komin.steganobot.botapi.BotState;
 
-
 public interface DataCache {
     void setUserCurrentBotState(long userId, BotState botState);
 

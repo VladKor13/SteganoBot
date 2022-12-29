@@ -2,6 +2,7 @@ package com.komin.steganobot.botapi;
 
 import com.komin.steganobot.cache.UserDataCache;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -11,8 +12,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 @Slf4j
 public class TelegramFacade {
 
-    private BotStateContext botStateContext;
-    private UserDataCache userDataCache;
+    private final BotStateContext botStateContext;
+    private final UserDataCache userDataCache;
 
     public TelegramFacade(BotStateContext botStateContext, UserDataCache userDataCache){
         this.botStateContext = botStateContext;
@@ -49,6 +50,6 @@ public class TelegramFacade {
             return botStateContext.processTipMessage(
                     userDataCache.getUserCurrentBotState(user_Id));
         }
-        return "No tips";
+        return StringUtils.EMPTY;
     }
 }

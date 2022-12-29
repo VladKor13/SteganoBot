@@ -55,7 +55,7 @@ public class MySteganoBot extends TelegramWebhookBot {
     private void sendTip(Update update){
         Long user_Id = update.getMessage().getFrom().getId();
         String tipMessageToUser = telegramFacade.handleTip(user_Id);
-        if (!tipMessageToUser.equals("No tips")){
+        if (!tipMessageToUser.isEmpty()){
             try{
                 execute(new SendMessage(user_Id.toString(), tipMessageToUser));
             } catch (TelegramApiException e) {

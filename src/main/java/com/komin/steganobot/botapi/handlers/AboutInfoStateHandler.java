@@ -44,7 +44,7 @@ public class AboutInfoStateHandler implements InputMessageHandler {
         Long user_id = inputMessage.getFrom().getId();
         long chat_id = inputMessage.getChatId();
         SendMessage replyToUser = null;
-        String valid_answer_option = localeMessageService.getMessage("option.BackToMainMenuValidOption");
+        String valid_answer_option = localeMessageService.getMessage("option.back-to-main-menu-valid-option");
 
         if (Objects.equals(inputMessage.getText(), valid_answer_option)){
             userDataCache.setUserCurrentBotState(user_id, BotState.MAIN_MENU_STATE);

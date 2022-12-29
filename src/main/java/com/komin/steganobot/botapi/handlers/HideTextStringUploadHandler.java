@@ -44,7 +44,7 @@ public class HideTextStringUploadHandler implements InputMessageHandler {
         long user_id = inputMessage.getFrom().getId();
         long chat_id = inputMessage.getChatId();
         SendMessage replyToUser = null;
-        String valid_answer_option1 = localeMessageService.getMessage("option.BackToMainMenuValidOption");
+        String valid_answer_option1 = localeMessageService.getMessage("option.back-to-main-menu-valid-option");
         String valid_answer_option2 = localeMessageService.getMessage("option.HideTextStringUploadStateValidOption");
 
         if (Objects.equals(inputMessage.getText(), valid_answer_option1)){
