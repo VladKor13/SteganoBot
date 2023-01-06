@@ -7,7 +7,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class UserDataCache implements DataCache{
+public class UserDataCache implements DataCache {
+
     // Add communication with DB here
     private final Map<Long, BotState> usersBotStates = new HashMap<>();
     private boolean newStateWasSet = false;
@@ -15,15 +16,13 @@ public class UserDataCache implements DataCache{
     @Override
     public void setUserCurrentBotState(long userId, BotState botState) {
         usersBotStates.put(userId, botState);
-        //Add tip
         setNewStateWasSet(true);
-        //Add inline keyboard
     }
 
     @Override
     public BotState getUserCurrentBotState(long userId) {
         BotState botState = usersBotStates.get(userId);
-        if (botState == null){
+        if (botState == null) {
             botState = BotState.INITIAL_STATE;
         }
         return botState;

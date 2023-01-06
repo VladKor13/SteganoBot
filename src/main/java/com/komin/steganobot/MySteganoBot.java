@@ -16,7 +16,7 @@ public class MySteganoBot extends TelegramWebhookBot {
 
     private final TelegramFacade telegramFacade;
 
-    public MySteganoBot(DefaultBotOptions botOptions, TelegramFacade telegramFacade){
+    public MySteganoBot(DefaultBotOptions botOptions, TelegramFacade telegramFacade) {
         super(botOptions);
         this.telegramFacade = telegramFacade;
     }
@@ -43,24 +43,27 @@ public class MySteganoBot extends TelegramWebhookBot {
         return null;
     }
 
-    private void sendMessage(Update update){
+    private void sendMessage(Update update) {
         SendMessage replyMessageToUser = telegramFacade.handleUpdate(update);
-        try{
+        if (replyMessageToUser == null) {
+            return;
+        }
+        try {
             execute(replyMessageToUser);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
     }
 
-    private void sendTip(Update update){
-        Long user_Id = update.getMessage().getFrom().getId();
-        String tipMessageToUser = telegramFacade.handleTip(user_Id);
-        if (!tipMessageToUser.isEmpty()){
-            try{
-                execute(new SendMessage(user_Id.toString(), tipMessageToUser));
-            } catch (TelegramApiException e) {
-                e.printStackTrace();
-            }
+    private void sendTip(Update update) {
+        SendMessage tipMessageToUser = telegramFacade.handleTip(update.getMessage());
+        if (tipMessageToUser == null) {
+            return;
+        }
+        try {
+            execute(tipMessageToUser);
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
         }
     }
 

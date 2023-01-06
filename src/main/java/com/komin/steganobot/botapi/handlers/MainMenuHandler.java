@@ -3,6 +3,7 @@ package com.komin.steganobot.botapi.handlers;
 import com.komin.steganobot.botapi.BotState;
 import com.komin.steganobot.botapi.InputMessageHandler;
 import com.komin.steganobot.botapi.options.MainMenuOption;
+import com.komin.steganobot.builder.ReplyKeyboardMarkupBuilder;
 import com.komin.steganobot.cache.UserDataCache;
 import com.komin.steganobot.service.LocaleMessageService;
 import com.komin.steganobot.service.ReplyMessageService;
@@ -11,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -36,8 +38,8 @@ public class MainMenuHandler implements InputMessageHandler {
     }
 
     @Override
-    public String handleTip() {
-        return localeMessageService.getMessage("tip.MainMenuState");
+    public SendMessage getStateTip(Message message) {
+        return generateTip(message, generateKeyboard());
     }
 
     private SendMessage processUsersInput(Message inputMessage) {
@@ -52,7 +54,7 @@ public class MainMenuHandler implements InputMessageHandler {
 
         if (mainMenuOptionOptional.isEmpty()) {
             return messageService
-                    .getReplyMessage(String.valueOf(chat_id), "reply.NoSuchOptionErrorMessage");
+                    .getReplyMessage(String.valueOf(chat_id), "reply.no-such-option-error-message");
         }
         MainMenuOption mainMenuOption = mainMenuOptionOptional.get();
         userDataCache.setUserCurrentBotState(user_id, mainMenuOption.getBotState());
@@ -60,4 +62,21 @@ public class MainMenuHandler implements InputMessageHandler {
         return null;
     }
 
+    private SendMessage generateTip(Message inputMessage, ReplyKeyboardMarkup replyKeyboardMarkup) {
+        long chat_id = inputMessage.getChatId();
+        SendMessage replyTip = new SendMessage(String.valueOf(chat_id), localeMessageService.getMessage("tip.main-menu-state"));
+        if (replyKeyboardMarkup != null) {
+            replyTip.enableMarkdown(true);
+            replyTip.setReplyMarkup(replyKeyboardMarkup);
+        }
+        return replyTip;
+    }
+
+    private ReplyKeyboardMarkup generateKeyboard() {
+        String hideTextOption = localeMessageService.getMessage("option.main-menu-state-hide-text-option");
+        String unpackTextOption = localeMessageService.getMessage("option.main-menu-state-unpack-text-option");
+        String aboutInfoOption = localeMessageService.getMessage("option.main-menu-state-about-info-option");
+
+        return ReplyKeyboardMarkupBuilder.build(hideTextOption, unpackTextOption, aboutInfoOption);
+    }
 }

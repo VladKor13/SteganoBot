@@ -16,16 +16,13 @@ import org.telegram.telegrambots.bots.DefaultBotOptions;
 @Configuration
 @ConfigurationProperties(prefix = "telegrambot")
 public class BotConfig {
+
     private String webHookPath;
     private String botUserName;
     private String botToken;
 
-//    private DefaultBotOptions.ProxyType proxyType;
-//    private String proxyHost;
-//    private int proxyPort;
-
     @Bean
-    public MySteganoBot mySteganoBot(TelegramFacade telegramFacade){
+    public MySteganoBot mySteganoBot(TelegramFacade telegramFacade) {
         MySteganoBot mySteganoBot = new MySteganoBot(new DefaultBotOptions(), telegramFacade);
         mySteganoBot.setBotUserName(botUserName);
         mySteganoBot.setBotToken(botToken);
@@ -34,7 +31,7 @@ public class BotConfig {
     }
 
     @Bean
-    public MessageSource messageSource(){
+    public MessageSource messageSource() {
         ReloadableResourceBundleMessageSource messageSource
                 = new ReloadableResourceBundleMessageSource();
         messageSource.setBasename("classpath:messages");

@@ -15,11 +15,12 @@ import java.util.Objects;
 @Slf4j
 @Component
 public class InitialHandler implements InputMessageHandler {
+
     private final UserDataCache userDataCache;
     private final ReplyMessageService messageService;
     private final LocaleMessageService localeMessageService;
 
-    public InitialHandler(UserDataCache userDataCache, ReplyMessageService messageService, LocaleMessageService localeMessageService){
+    public InitialHandler(UserDataCache userDataCache, ReplyMessageService messageService, LocaleMessageService localeMessageService) {
         this.userDataCache = userDataCache;
         this.messageService = messageService;
         this.localeMessageService = localeMessageService;
@@ -36,23 +37,28 @@ public class InitialHandler implements InputMessageHandler {
     }
 
     @Override
-    public String handleTip() {
-        return localeMessageService.getMessage("tip.InitialState");
+    public SendMessage getStateTip(Message message) {
+        return generateTip(message);
     }
 
-    private SendMessage processUsersInput(Message inputMessage){
+    private SendMessage processUsersInput(Message inputMessage) {
         Long user_id = inputMessage.getFrom().getId();
         long chat_id = inputMessage.getChatId();
         SendMessage replyToUser = null;
-        String valid_answer_option = localeMessageService.getMessage("option.InitialStateValidOption");
+        String valid_answer_option = localeMessageService.getMessage("option.іnitial-state-valid-option");
 
-        if (Objects.equals(inputMessage.getText(), valid_answer_option)){
+        if (Objects.equals(inputMessage.getText(), valid_answer_option)) {
             userDataCache.setUserCurrentBotState(user_id, BotState.MAIN_MENU_STATE);
         } else {
             replyToUser = messageService
-                    .getReplyMessage(String.valueOf(chat_id), "tip.InitialState");
+                    .getReplyMessage(String.valueOf(chat_id), "tip.initial-state");
         }
 
         return replyToUser;
+    }
+
+    private SendMessage generateTip(Message inputMessage) {
+        long chat_id = inputMessage.getChatId();
+        return new SendMessage(String.valueOf(chat_id), localeMessageService.getMessage("tip.initial-state"));
     }
 }

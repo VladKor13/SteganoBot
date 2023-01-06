@@ -10,14 +10,15 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 @RestController
 public class WebHookController {
+
     private final MySteganoBot mySteganoBot;
 
-    public WebHookController(MySteganoBot mySteganoBot){
+    public WebHookController(MySteganoBot mySteganoBot) {
         this.mySteganoBot = mySteganoBot;
     }
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
-    public BotApiMethod<?> onUpdateReceived(@RequestBody Update update){
+    public BotApiMethod<?> onUpdateReceived(@RequestBody Update update) {
         return mySteganoBot.onWebhookUpdateReceived(update);
     }
 }
