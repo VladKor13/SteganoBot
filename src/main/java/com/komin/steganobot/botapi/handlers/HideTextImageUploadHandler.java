@@ -2,17 +2,23 @@ package com.komin.steganobot.botapi.handlers;
 
 import com.komin.steganobot.botapi.BotState;
 import com.komin.steganobot.botapi.InputMessageHandler;
+import com.komin.steganobot.botapi.options.BackToMainMenuOption;
 import com.komin.steganobot.builder.ReplyKeyboardMarkupBuilder;
 import com.komin.steganobot.cache.UserDataCache;
+import com.komin.steganobot.files_service.FilesService;
 import com.komin.steganobot.service.LocaleMessageService;
 import com.komin.steganobot.service.ReplyMessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
+import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -46,19 +52,44 @@ public class HideTextImageUploadHandler implements InputMessageHandler {
     private SendMessage processUsersInput(Message inputMessage) {
         long user_id = inputMessage.getFrom().getId();
         long chat_id = inputMessage.getChatId();
-        SendMessage replyToUser = null;
-        String valid_answer_option1 = localeMessageService.getMessage("option.back-to-main-menu-valid-option");
-        String valid_answer_option2 = localeMessageService.getMessage("option.hide-text-image-upload-state-valid-option");
-        if (Objects.equals(inputMessage.getText(), valid_answer_option1)) {
-            userDataCache.setUserCurrentBotState(user_id, BotState.MAIN_MENU_STATE);
-        } else if (Objects.equals(inputMessage.getText(), valid_answer_option2)) {
-            userDataCache.setUserCurrentBotState(user_id, BotState.HIDE_TEXT_STRING_UPLOAD_STATE);
-        } else {
-            replyToUser = messageService
-                    .getReplyMessage(String.valueOf(chat_id), "reply.no-such-option-error-message");
+
+        final Document document = inputMessage.getDocument();
+        if (document != null) {
+            final String fileId = document.getFileId();
+            final String fileName = document.getFileName();
+            if (isPNG(fileName)) {
+                try {
+                    FilesService.downloadFile(fileName, fileId);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                userDataCache.setUserCurrentBotState(user_id, BotState.HIDE_TEXT_STRING_UPLOAD_STATE);
+
+                return messageService
+                        .getReplyMessage(String.valueOf(chat_id), "reply.photo-was-uploaded-successfully-message");
+            }
+
         }
 
-        return replyToUser;
+        Optional<BackToMainMenuOption> hideTextImageUploadOptionOptional =
+                Stream.of(BackToMainMenuOption.values())
+                      .filter(option -> Objects.equals(localeMessageService.getMessage(option.getValue()),
+                              inputMessage.getText()))
+                      .findFirst();
+
+        if (hideTextImageUploadOptionOptional.isEmpty()) {
+            if (inputMessage.getPhoto() != null && inputMessage.getText() == null) {
+                return messageService
+                        .getReplyMessage(String.valueOf(chat_id), "reply.upload-photo-as-file-error-message");
+            }
+            return messageService
+                    .getReplyMessage(String.valueOf(chat_id), "reply.no-such-option-error-message");
+        }
+        BackToMainMenuOption backToMainMenuOption = hideTextImageUploadOptionOptional.get();
+        userDataCache.setUserCurrentBotState(user_id, backToMainMenuOption.getBotState());
+
+        return null;
     }
 
     private SendMessage generateTip(Message inputMessage, ReplyKeyboardMarkup replyKeyboardMarkup) {
@@ -75,5 +106,10 @@ public class HideTextImageUploadHandler implements InputMessageHandler {
         String backToMainMenu = localeMessageService.getMessage("option.back-to-main-menu-valid-option");
 
         return ReplyKeyboardMarkupBuilder.build(backToMainMenu);
+    }
+
+    private boolean isPNG(String fileName) {
+        final String validFileExtension = ".png";
+        return fileName.endsWith(validFileExtension);
     }
 }

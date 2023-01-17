@@ -23,7 +23,7 @@ public class TelegramFacade {
         SendMessage replyMessage = null;
 
         Message message = update.getMessage();
-        if (message != null && message.hasText()) {
+        if (message != null) {
             log.info("New message from User: {}, chatId: {}, with text: {}",
                     message.getFrom().getUserName(), message.getChatId(), message.getText());
             replyMessage = handleInputMessage(message);

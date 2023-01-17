@@ -2,7 +2,7 @@ package com.komin.steganobot.botapi.handlers;
 
 import com.komin.steganobot.botapi.BotState;
 import com.komin.steganobot.botapi.InputMessageHandler;
-import com.komin.steganobot.botapi.options.AboutMenuOption;
+import com.komin.steganobot.botapi.options.BackToMainMenuOption;
 import com.komin.steganobot.builder.ReplyKeyboardMarkupBuilder;
 import com.komin.steganobot.cache.UserDataCache;
 import com.komin.steganobot.service.LocaleMessageService;
@@ -50,8 +50,8 @@ public class AboutInfoStateHandler implements InputMessageHandler {
         Long user_id = inputMessage.getFrom().getId();
         long chat_id = inputMessage.getChatId();
 
-        Optional<AboutMenuOption> aboutMenuOptionOptional =
-                Stream.of(AboutMenuOption.values())
+        Optional<BackToMainMenuOption> aboutMenuOptionOptional =
+                Stream.of(BackToMainMenuOption.values())
                       .filter(option -> Objects.equals(localeMessageService.getMessage(option.getValue()),
                               inputMessage.getText()))
                       .findFirst();
@@ -60,8 +60,8 @@ public class AboutInfoStateHandler implements InputMessageHandler {
             return messageService
                     .getReplyMessage(String.valueOf(chat_id), "reply.no-such-option-error-message");
         }
-        AboutMenuOption aboutMenuOption = aboutMenuOptionOptional.get();
-        userDataCache.setUserCurrentBotState(user_id, aboutMenuOption.getBotState());
+        BackToMainMenuOption backToMainMenuOption = aboutMenuOptionOptional.get();
+        userDataCache.setUserCurrentBotState(user_id, backToMainMenuOption.getBotState());
 
         return null;
     }

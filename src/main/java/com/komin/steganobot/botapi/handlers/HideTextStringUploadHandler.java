@@ -2,6 +2,7 @@ package com.komin.steganobot.botapi.handlers;
 
 import com.komin.steganobot.botapi.BotState;
 import com.komin.steganobot.botapi.InputMessageHandler;
+import com.komin.steganobot.botapi.options.BackToMainMenuOption;
 import com.komin.steganobot.builder.ReplyKeyboardMarkupBuilder;
 import com.komin.steganobot.cache.UserDataCache;
 import com.komin.steganobot.service.LocaleMessageService;
@@ -13,6 +14,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 @Slf4j
 @Component
@@ -46,25 +49,34 @@ public class HideTextStringUploadHandler implements InputMessageHandler {
     private SendMessage processUsersInput(Message inputMessage) {
         long user_id = inputMessage.getFrom().getId();
         long chat_id = inputMessage.getChatId();
-        SendMessage replyToUser = null;
-        String valid_answer_option1 = localeMessageService.getMessage("option.back-to-main-menu-valid-option");
-        String valid_answer_option2 = localeMessageService.getMessage("option.hide-text-string-upload-state-valid-option");
 
-        if (Objects.equals(inputMessage.getText(), valid_answer_option1)) {
-            userDataCache.setUserCurrentBotState(user_id, BotState.MAIN_MENU_STATE);
-        } else if (Objects.equals(inputMessage.getText(), valid_answer_option2)) {
-            userDataCache.setUserCurrentBotState(user_id, BotState.HIDE_TEXT_RESULT_UPLOAD_STATE);
-        } else {
-            replyToUser = messageService
-                    .getReplyMessage(String.valueOf(chat_id), "reply.no-such-option-error-message");
+        Optional<BackToMainMenuOption> hideTextStringUploadOptionOptional =
+                Stream.of(BackToMainMenuOption.values())
+                      .filter(option -> Objects.equals(localeMessageService.getMessage(option.getValue()),
+                              inputMessage.getText()))
+                      .findFirst();
+
+        if (hideTextStringUploadOptionOptional.isEmpty()) {
+            if (isStringValid(inputMessage.getText())) {
+                saveUsersText();
+                userDataCache.setUserCurrentBotState(user_id, BotState.HIDE_TEXT_RESULT_UPLOAD_STATE);
+                return messageService
+                        .getReplyMessage(String.valueOf(chat_id), "reply.text-was-uploaded-message");
+            }
+            return messageService
+                    .getReplyMessage(String.valueOf(chat_id), "reply.text-has-too-many-chars-error-message");
         }
+        BackToMainMenuOption backToMainMenuOption = hideTextStringUploadOptionOptional.get();
+        userDataCache.setUserCurrentBotState(user_id, backToMainMenuOption.getBotState());
 
-        return replyToUser;
+        return null;
     }
 
     private SendMessage generateTip(Message inputMessage, ReplyKeyboardMarkup replyKeyboardMarkup) {
         long chat_id = inputMessage.getChatId();
-        SendMessage replyTip = new SendMessage(String.valueOf(chat_id), localeMessageService.getMessage("tip.hide-text-string-upload-state"));
+        SendMessage replyTip = new SendMessage(String.valueOf(chat_id),
+                localeMessageService.getMessage("tip.hide-text-string-upload-state")
+                        + " " + evaluatePossibleCharQuantity());
         if (replyKeyboardMarkup != null) {
             replyTip.enableMarkdown(true);
             replyTip.setReplyMarkup(replyKeyboardMarkup);
@@ -76,5 +88,20 @@ public class HideTextStringUploadHandler implements InputMessageHandler {
         String backToMainMenu = localeMessageService.getMessage("option.back-to-main-menu-valid-option");
 
         return ReplyKeyboardMarkupBuilder.build(backToMainMenu);
+    }
+
+    private int evaluatePossibleCharQuantity() {
+        return 10;
+    }
+
+    private boolean isStringValid(String text) {
+        if (text == null) {
+            return false;
+        }
+        return text.length() <= evaluatePossibleCharQuantity();
+    }
+
+    private void saveUsersText(){
+
     }
 }

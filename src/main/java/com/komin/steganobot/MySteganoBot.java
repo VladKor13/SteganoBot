@@ -1,12 +1,18 @@
 package com.komin.steganobot;
 
 import com.komin.steganobot.botapi.TelegramFacade;
+import org.springframework.util.ResourceUtils;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 
 public class MySteganoBot extends TelegramWebhookBot {
 
@@ -40,6 +46,7 @@ public class MySteganoBot extends TelegramWebhookBot {
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
         sendMessage(update);
         sendTip(update);
+//        sendImageAsDocument(update.getMessage().getChatId(), "", "replyPic.png");
         return null;
     }
 
@@ -63,6 +70,19 @@ public class MySteganoBot extends TelegramWebhookBot {
         try {
             execute(tipMessageToUser);
         } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendImageAsDocument(long chatId, String caption, String imageName){
+        try {
+            InputFile image = new InputFile(ResourceUtils.getFile("src/downloaded_files/" + imageName));
+            SendDocument sendDocument = new SendDocument();
+            sendDocument.setDocument(image);
+            sendDocument.setChatId(chatId);
+            sendDocument.setCaption(caption);
+            execute(sendDocument);
+        } catch (TelegramApiException | FileNotFoundException e){
             e.printStackTrace();
         }
     }
