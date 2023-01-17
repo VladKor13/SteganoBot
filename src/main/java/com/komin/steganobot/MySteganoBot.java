@@ -1,5 +1,6 @@
 package com.komin.steganobot;
 
+import LSB.LSBHandler;
 import com.komin.steganobot.botapi.TelegramFacade;
 import org.springframework.util.ResourceUtils;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
@@ -12,6 +13,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 
 public class MySteganoBot extends TelegramWebhookBot {
 
@@ -45,7 +47,8 @@ public class MySteganoBot extends TelegramWebhookBot {
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
         sendMessage(update);
         sendTip(update);
-//        sendImageAsDocument(update.getMessage().getChatId(), "", "replyPic.png");
+        encodeIfNeeded(update);
+        decodeIfNeeded(update);
         return null;
     }
 
@@ -73,15 +76,43 @@ public class MySteganoBot extends TelegramWebhookBot {
         }
     }
 
-    private void sendImageAsDocument(long chatId, String caption, String imageName){
+    private void encodeIfNeeded(Update update) {
+        long chadId = update.getMessage().getChatId();
+        if (telegramFacade.isFilesReadyToEncode(chadId)) {
+            try {
+                LSBHandler.encode(String.valueOf(chadId));
+                sendImageAsDocument(chadId,"");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    private void decodeIfNeeded(Update update) {
+        long chadId = update.getMessage().getChatId();
+        if (telegramFacade.isFilesReadyToDecode(chadId)) {
+            try {
+                String decodedText = LSBHandler.decode(String.valueOf(chadId));
+                execute(new SendMessage(String.valueOf(chadId),decodedText));
+                //Текст, що вдалося вилучити із файла
+            } catch (IOException | TelegramApiException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    private void sendImageAsDocument(long chatId, String caption) {
         try {
-            InputFile image = new InputFile(ResourceUtils.getFile("src/downloaded_files/" + imageName));
+            InputFile image = new InputFile(ResourceUtils.getFile("src/downloaded_files/"
+                    + chatId + "resultImage.png"));
             SendDocument sendDocument = new SendDocument();
             sendDocument.setDocument(image);
             sendDocument.setChatId(chatId);
             sendDocument.setCaption(caption);
             execute(sendDocument);
-        } catch (TelegramApiException | FileNotFoundException e){
+        } catch (TelegramApiException | FileNotFoundException e) {
             e.printStackTrace();
         }
     }

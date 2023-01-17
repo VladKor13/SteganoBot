@@ -6,6 +6,7 @@ import com.komin.steganobot.botapi.InputMessageHandler;
 import com.komin.steganobot.botapi.options.BackToMainMenuOption;
 import com.komin.steganobot.builder.ReplyKeyboardMarkupBuilder;
 import com.komin.steganobot.cache.UserDataCache;
+import com.komin.steganobot.files_service.FilesService;
 import com.komin.steganobot.service.LocaleMessageService;
 import com.komin.steganobot.service.ReplyMessageService;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +50,7 @@ public class HideTextStringUploadHandler implements InputMessageHandler {
 
     private SendMessage processUsersInput(Message inputMessage) {
         long user_id = inputMessage.getFrom().getId();
-        long chat_id = inputMessage.getChatId();
+        String chat_id = inputMessage.getChatId().toString();
 
         Optional<BackToMainMenuOption> hideTextStringUploadOptionOptional =
                 Stream.of(BackToMainMenuOption.values())
@@ -58,14 +59,14 @@ public class HideTextStringUploadHandler implements InputMessageHandler {
                       .findFirst();
 
         if (hideTextStringUploadOptionOptional.isEmpty()) {
-            if (isStringValid(inputMessage.getText(), String.valueOf(chat_id))) {
-                saveUserString();
+            if (isStringValid(inputMessage.getText(), chat_id)) {
+                FilesService.saveUserString(inputMessage.getText(), chat_id);
                 userDataCache.setUserCurrentBotState(user_id, BotState.HIDE_TEXT_RESULT_UPLOAD_STATE);
                 return messageService
-                        .getReplyMessage(String.valueOf(chat_id), "reply.text-was-uploaded-message");
+                        .getReplyMessage(chat_id, "reply.text-was-uploaded-message");
             }
             return messageService
-                    .getReplyMessage(String.valueOf(chat_id), "reply.text-has-too-many-chars-error-message");
+                    .getReplyMessage(chat_id, "reply.text-has-too-many-chars-error-message");
         }
         BackToMainMenuOption backToMainMenuOption = hideTextStringUploadOptionOptional.get();
         userDataCache.setUserCurrentBotState(user_id, backToMainMenuOption.getBotState());
@@ -74,10 +75,10 @@ public class HideTextStringUploadHandler implements InputMessageHandler {
     }
 
     private SendMessage generateTip(Message inputMessage, ReplyKeyboardMarkup replyKeyboardMarkup) {
-        long chat_id = inputMessage.getChatId();
-        SendMessage replyTip = new SendMessage(String.valueOf(chat_id),
+        String chat_id = inputMessage.getChatId().toString();
+        SendMessage replyTip = new SendMessage(chat_id,
                 localeMessageService.getMessage("tip.hide-text-string-upload-state")
-                        + " " + LSBEncoder.evaluatePossibleCharQuantity(String.valueOf(chat_id)));
+                        + " " + LSBEncoder.evaluatePossibleCharQuantity(chat_id));
         if (replyKeyboardMarkup != null) {
             replyTip.enableMarkdown(true);
             replyTip.setReplyMarkup(replyKeyboardMarkup);
@@ -91,14 +92,10 @@ public class HideTextStringUploadHandler implements InputMessageHandler {
         return ReplyKeyboardMarkupBuilder.build(backToMainMenu);
     }
 
-    private boolean isStringValid(String text, String chat_id) {
+    private boolean isStringValid(String text, String chatId) {
         if (text == null) {
             return false;
         }
-        return text.length() <= LSBEncoder.evaluatePossibleCharQuantity(String.valueOf(chat_id));
-    }
-
-    private void saveUserString() {
-
+        return text.length() <= LSBEncoder.evaluatePossibleCharQuantity(chatId);
     }
 }

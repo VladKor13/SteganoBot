@@ -70,6 +70,7 @@ public class HideTextImageUploadHandler implements InputMessageHandler {
                         .getReplyMessage(String.valueOf(chat_id), "reply.photo-was-uploaded-successfully-message");
             }
 
+
         }
 
         Optional<BackToMainMenuOption> hideTextImageUploadOptionOptional =

@@ -50,4 +50,13 @@ public class TelegramFacade {
         return null;
     }
 
+    public boolean isFilesReadyToEncode(long chatId){
+        return userDataCache.getUserCurrentBotState(chatId)
+                            .equals(BotState.HIDE_TEXT_RESULT_UPLOAD_STATE);
+    }
+
+    public boolean isFilesReadyToDecode(long chatId){
+        return userDataCache.getUserCurrentBotState(chatId)
+                            .equals(BotState.UNPACK_TEXT_RESULT_UPLOAD_STATE);
+    }
 }

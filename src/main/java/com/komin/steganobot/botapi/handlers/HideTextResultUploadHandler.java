@@ -48,8 +48,7 @@ public class HideTextResultUploadHandler implements InputMessageHandler {
 
     private SendMessage processUsersInput(Message inputMessage) {
         Long user_id = inputMessage.getFrom().getId();
-        long chat_id = inputMessage.getChatId();
-
+        String chat_id = inputMessage.getChatId().toString();
 
         Optional<BackToMainMenuOption> hideTextResultUploadOptionOptional =
                 Stream.of(BackToMainMenuOption.values())
@@ -59,20 +58,17 @@ public class HideTextResultUploadHandler implements InputMessageHandler {
 
         if (hideTextResultUploadOptionOptional.isEmpty()) {
             return messageService
-                    .getReplyMessage(String.valueOf(chat_id), "reply.no-such-option-error-message");
+                    .getReplyMessage(chat_id, "reply.no-such-option-error-message");
         }
         BackToMainMenuOption backToMainMenuOption = hideTextResultUploadOptionOptional.get();
         userDataCache.setUserCurrentBotState(user_id, backToMainMenuOption.getBotState());
 
         return null;
-
-//            userDataCache.setUserCurrentBotState(user_id, BotState.MAIN_MENU_STATE);
-
     }
 
     private SendMessage generateTip(Message inputMessage, ReplyKeyboardMarkup replyKeyboardMarkup) {
-        long chat_id = inputMessage.getChatId();
-        SendMessage replyTip = new SendMessage(String.valueOf(chat_id), localeMessageService.getMessage("tip.hide-text-result-upload-state"));
+        String chat_id = inputMessage.getChatId().toString();
+        SendMessage replyTip = new SendMessage(chat_id, localeMessageService.getMessage("tip.hide-text-result-upload-state"));
         if (replyKeyboardMarkup != null) {
             replyTip.enableMarkdown(true);
             replyTip.setReplyMarkup(replyKeyboardMarkup);
@@ -82,7 +78,6 @@ public class HideTextResultUploadHandler implements InputMessageHandler {
 
     private ReplyKeyboardMarkup generateKeyboard() {
         String backToMainMenu = localeMessageService.getMessage("option.back-to-main-menu-valid-option");
-
         return ReplyKeyboardMarkupBuilder.build(backToMainMenu);
     }
 }

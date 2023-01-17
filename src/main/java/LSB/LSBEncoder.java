@@ -12,7 +12,6 @@ public class LSBEncoder {
 
     static String encodeMessage(String message) {
         String bitString = new BigInteger(message.getBytes()).toString(2);
-        //        System.out.println("Bit value: " + bitString);
         if (bitString.length() % 8 != 0) {
             StringBuilder zeroes = new StringBuilder();
             while ((bitString.length() + zeroes.length()) % 8 != 0) {

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public class LSBDecoder {
 
-    final static String getMessage(String encoded) {
+    static String getMessage(String encoded) {
         int count = encoded.length() - 1;
         StringBuilder message = new StringBuilder();
         int values = encoded.length() / 8;
@@ -46,7 +46,7 @@ public class LSBDecoder {
         return result;
     }
 
-    final static String decodeMessage(BufferedImage image) {
+    static String decodeMessage(BufferedImage image) {
         StringBuilder sb = new StringBuilder();
 
         for (int x = 0; x < image.getWidth(); x++) {

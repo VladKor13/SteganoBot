@@ -9,6 +9,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class FilesService {
 
@@ -30,6 +34,24 @@ public class FilesService {
 
         br.close();
         is.close();
+    }
+
+    public static void saveUserString(String text, String chatId) {
+        try {
+            FileUtils.writeStringToFile(new File("src/downloaded_files/" + chatId + "inputText.txt"), text, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String readTxt(String path, Charset encoding) {
+        byte[] encoded = new byte[0];
+        try {
+            encoded = Files.readAllBytes(Paths.get(path));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new String(encoded, encoding);
     }
 
 }
