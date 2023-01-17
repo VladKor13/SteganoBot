@@ -1,5 +1,6 @@
 package com.komin.steganobot.botapi.handlers;
 
+import LSB.LSBEncoder;
 import com.komin.steganobot.botapi.BotState;
 import com.komin.steganobot.botapi.InputMessageHandler;
 import com.komin.steganobot.botapi.options.BackToMainMenuOption;
@@ -57,8 +58,8 @@ public class HideTextStringUploadHandler implements InputMessageHandler {
                       .findFirst();
 
         if (hideTextStringUploadOptionOptional.isEmpty()) {
-            if (isStringValid(inputMessage.getText())) {
-                saveUsersText();
+            if (isStringValid(inputMessage.getText(), String.valueOf(chat_id))) {
+                saveUserString();
                 userDataCache.setUserCurrentBotState(user_id, BotState.HIDE_TEXT_RESULT_UPLOAD_STATE);
                 return messageService
                         .getReplyMessage(String.valueOf(chat_id), "reply.text-was-uploaded-message");
@@ -76,7 +77,7 @@ public class HideTextStringUploadHandler implements InputMessageHandler {
         long chat_id = inputMessage.getChatId();
         SendMessage replyTip = new SendMessage(String.valueOf(chat_id),
                 localeMessageService.getMessage("tip.hide-text-string-upload-state")
-                        + " " + evaluatePossibleCharQuantity());
+                        + " " + LSBEncoder.evaluatePossibleCharQuantity(String.valueOf(chat_id)));
         if (replyKeyboardMarkup != null) {
             replyTip.enableMarkdown(true);
             replyTip.setReplyMarkup(replyKeyboardMarkup);
@@ -90,18 +91,14 @@ public class HideTextStringUploadHandler implements InputMessageHandler {
         return ReplyKeyboardMarkupBuilder.build(backToMainMenu);
     }
 
-    private int evaluatePossibleCharQuantity() {
-        return 10;
-    }
-
-    private boolean isStringValid(String text) {
+    private boolean isStringValid(String text, String chat_id) {
         if (text == null) {
             return false;
         }
-        return text.length() <= evaluatePossibleCharQuantity();
+        return text.length() <= LSBEncoder.evaluatePossibleCharQuantity(String.valueOf(chat_id));
     }
 
-    private void saveUsersText(){
+    private void saveUserString() {
 
     }
 }

@@ -59,7 +59,7 @@ public class HideTextImageUploadHandler implements InputMessageHandler {
             final String fileName = document.getFileName();
             if (isPNG(fileName)) {
                 try {
-                    FilesService.downloadFile(fileName, fileId);
+                    FilesService.downloadImage(fileId, String.valueOf(chat_id));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
