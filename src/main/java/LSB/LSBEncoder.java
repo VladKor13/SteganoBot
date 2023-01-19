@@ -82,6 +82,7 @@ public class LSBEncoder {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return result;
+        
+        return Math.min(result, 4096);
     }
 }

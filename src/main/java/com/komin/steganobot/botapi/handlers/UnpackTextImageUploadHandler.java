@@ -63,13 +63,11 @@ public class UnpackTextImageUploadHandler implements InputMessageHandler {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
                 userDataCache.setUserCurrentBotState(user_id, BotState.UNPACK_TEXT_RESULT_UPLOAD_STATE);
 
                 return messageService
                         .getReplyMessage(String.valueOf(chat_id), "reply.photo-was-uploaded-successfully-message");
             }
-
         }
 
         Optional<BackToMainMenuOption> unpackTextImageUploadOptionOptional =
@@ -110,6 +108,6 @@ public class UnpackTextImageUploadHandler implements InputMessageHandler {
 
     private boolean isPNG(String fileName) {
         final String validFileExtension = ".png";
-        return fileName.endsWith(validFileExtension);
+        return fileName.toLowerCase().endsWith(validFileExtension);
     }
 }

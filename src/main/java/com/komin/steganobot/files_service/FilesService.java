@@ -38,7 +38,9 @@ public class FilesService {
 
     public static void saveUserString(String text, String chatId) {
         try {
-            FileUtils.writeStringToFile(new File("src/downloaded_files/" + chatId + "inputText.txt"), text, StandardCharsets.UTF_8);
+            FileUtils.writeStringToFile(new File("src/downloaded_files/" + chatId + "inputText.txt"),
+                    "MSG" + text,
+                    StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
         }

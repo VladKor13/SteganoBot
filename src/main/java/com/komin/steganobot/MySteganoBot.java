@@ -12,6 +12,7 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -45,10 +46,12 @@ public class MySteganoBot extends TelegramWebhookBot {
 
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
-        sendMessage(update);
-        sendTip(update);
-        encodeIfNeeded(update);
-        decodeIfNeeded(update);
+        if (update != null) {
+            sendMessage(update);
+            sendTip(update);
+            encodeIfNeeded(update);
+            decodeIfNeeded(update);
+        }
         return null;
     }
 
@@ -77,30 +80,69 @@ public class MySteganoBot extends TelegramWebhookBot {
     }
 
     private void encodeIfNeeded(Update update) {
-        long chadId = update.getMessage().getChatId();
-        if (telegramFacade.isFilesReadyToEncode(chadId)) {
-            try {
-                LSBHandler.encode(String.valueOf(chadId));
-                sendImageAsDocument(chadId,"");
-            } catch (IOException e) {
-                e.printStackTrace();
+        if (update.getMessage() != null) {
+            long chadId = update.getMessage().getChatId();
+            if (telegramFacade.isFilesReadyToEncode(chadId)) {
+                try {
+                    LSBHandler.encode(String.valueOf(chadId));
+                    sendImageAsDocument(chadId, "");
+                    deleteUserCache(update);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
-
     }
 
     private void decodeIfNeeded(Update update) {
-        long chadId = update.getMessage().getChatId();
-        if (telegramFacade.isFilesReadyToDecode(chadId)) {
-            try {
-                String decodedText = LSBHandler.decode(String.valueOf(chadId));
-                execute(new SendMessage(String.valueOf(chadId),decodedText));
-                //Текст, що вдалося вилучити із файла
-            } catch (IOException | TelegramApiException e) {
-                e.printStackTrace();
+        if (update.getMessage() != null) {
+            long chatId = update.getMessage().getChatId();
+            if (telegramFacade.isFilesReadyToDecode(chatId)) {
+                try {
+                    String decodedText = LSBHandler.decode(String.valueOf(chatId));
+                    if (decodedText == null) {
+                        execute(new SendMessage(String.valueOf(chatId),
+                                "Цей контейнер не містить приховане повідомлення."));
+                    } else {
+                        sendLongMessage(chatId, decodedText);
+                    }
+
+                    deleteUserCache(update);
+                } catch (IOException | TelegramApiException e) {
+                    e.printStackTrace();
+                }
             }
         }
+    }
 
+    private void sendLongMessage(long chatId, String text) throws TelegramApiException {
+        execute(new SendMessage(String.valueOf(chatId), "Повідомлення, що було приховане:"));
+        while (text.length() > 4096){
+            execute(new SendMessage(String.valueOf(chatId), text.substring(0,4095)));
+            text = text.substring(4096);
+        }
+        execute(new SendMessage(String.valueOf(chatId), text));
+    }
+
+    private void deleteUserCache(Update update) {
+        String chatId = update.getMessage().getChatId().toString();
+        File file = new File("src/downloaded_files/"
+                + chatId + "resultImage.png");
+        if (file.delete()) {
+            //log here
+        }
+
+        file = new File("src/downloaded_files/"
+                + chatId + "inputImage.png");
+        if (file.delete()) {
+            //log here
+        }
+
+        file = new File("src/downloaded_files/"
+                + chatId + "inputText.txt");
+        if (file.delete()) {
+            //log here
+        }
     }
 
     private void sendImageAsDocument(long chatId, String caption) {

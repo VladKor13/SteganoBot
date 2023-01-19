@@ -27,8 +27,14 @@ public class LSBDecoder {
             arrayCount--;
 
         }
+        String result = new String(clearAllZeroes(ba));
 
-        return new String(clearAllZeroes(ba));
+        if (result.startsWith("MSG")){
+            return result.substring(3);
+        } else {
+            return null;
+        }
+
     }
 
     private static byte[] clearAllZeroes(byte[] initialByteArray) {

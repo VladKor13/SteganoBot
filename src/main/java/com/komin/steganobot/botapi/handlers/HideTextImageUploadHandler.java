@@ -69,10 +69,7 @@ public class HideTextImageUploadHandler implements InputMessageHandler {
                 return messageService
                         .getReplyMessage(String.valueOf(chat_id), "reply.photo-was-uploaded-successfully-message");
             }
-
-
         }
-
         Optional<BackToMainMenuOption> hideTextImageUploadOptionOptional =
                 Stream.of(BackToMainMenuOption.values())
                       .filter(option -> Objects.equals(localeMessageService.getMessage(option.getValue()),
@@ -111,6 +108,6 @@ public class HideTextImageUploadHandler implements InputMessageHandler {
 
     private boolean isPNG(String fileName) {
         final String validFileExtension = ".png";
-        return fileName.endsWith(validFileExtension);
+        return fileName.toLowerCase().endsWith(validFileExtension);
     }
 }
