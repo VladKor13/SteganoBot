@@ -21,16 +21,10 @@ import java.util.stream.Stream;
 
 @Slf4j
 @Component
-public class HideTextStringUploadHandler implements InputMessageHandler {
-
-    private final UserDataCache userDataCache;
-    private final ReplyMessageService messageService;
-    private final LocaleMessageService localeMessageService;
+public class HideTextStringUploadHandler extends StateHandler implements InputMessageHandler {
 
     public HideTextStringUploadHandler(UserDataCache userDataCache, ReplyMessageService messageService, LocaleMessageService localeMessageService) {
-        this.userDataCache = userDataCache;
-        this.messageService = messageService;
-        this.localeMessageService = localeMessageService;
+        super(userDataCache, messageService, localeMessageService);
     }
 
     @Override
@@ -49,8 +43,13 @@ public class HideTextStringUploadHandler implements InputMessageHandler {
     }
 
     private SendMessage processUsersInput(Message inputMessage) {
-        long user_id = inputMessage.getFrom().getId();
-        String chat_id = inputMessage.getChatId().toString();
+        return checkMessageForRightOption(inputMessage);
+    }
+
+    @Override
+    SendMessage checkMessageForRightOption(Message inputMessage) {
+        long userID = inputMessage.getFrom().getId();
+        String chatID = inputMessage.getChatId().toString();
 
         Optional<BackToMainMenuOption> hideTextStringUploadOptionOptional =
                 Stream.of(BackToMainMenuOption.values())
@@ -59,17 +58,17 @@ public class HideTextStringUploadHandler implements InputMessageHandler {
                       .findFirst();
 
         if (hideTextStringUploadOptionOptional.isEmpty()) {
-            if (isStringValid(inputMessage.getText(), chat_id)) {
-                FilesService.saveUserString(inputMessage.getText(), chat_id);
-                userDataCache.setUserCurrentBotState(user_id, BotState.HIDE_TEXT_RESULT_UPLOAD_STATE);
+            if (isStringValid(inputMessage.getText(), chatID)) {
+                FilesService.saveUserString(inputMessage.getText(), chatID);
+                userDataCache.setUserCurrentBotState(userID, BotState.HIDE_TEXT_RESULT_UPLOAD_STATE);
                 return messageService
-                        .getReplyMessage(chat_id, "reply.text-was-uploaded-message");
+                        .getReplyMessage(chatID, "reply.text-was-uploaded-message");
             }
             return messageService
-                    .getReplyMessage(chat_id, "reply.text-has-too-many-chars-error-message");
+                    .getReplyMessage(chatID, "reply.text-has-too-many-chars-error-message");
         }
         BackToMainMenuOption backToMainMenuOption = hideTextStringUploadOptionOptional.get();
-        userDataCache.setUserCurrentBotState(user_id, backToMainMenuOption.getBotState());
+        userDataCache.setUserCurrentBotState(userID, backToMainMenuOption.getFollowingBotState());
 
         return null;
     }

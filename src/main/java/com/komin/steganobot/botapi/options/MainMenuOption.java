@@ -17,7 +17,7 @@ public enum MainMenuOption {
     ABOUT_INFO_OPTION("option.main-menu-state-about-info-option", ABOUT_INFO_STATE);
 
     private final String value;
-    private final BotState botState;
+    private final BotState followingBotState;
 
 }
 

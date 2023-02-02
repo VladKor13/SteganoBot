@@ -10,20 +10,12 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
-import java.util.Objects;
-
 @Slf4j
 @Component
-public class InitialHandler implements InputMessageHandler {
-
-    private final UserDataCache userDataCache;
-    private final ReplyMessageService messageService;
-    private final LocaleMessageService localeMessageService;
+public class InitialHandler extends StateHandler implements InputMessageHandler {
 
     public InitialHandler(UserDataCache userDataCache, ReplyMessageService messageService, LocaleMessageService localeMessageService) {
-        this.userDataCache = userDataCache;
-        this.messageService = messageService;
-        this.localeMessageService = localeMessageService;
+        super(userDataCache, messageService, localeMessageService);
     }
 
     @Override
@@ -42,19 +34,7 @@ public class InitialHandler implements InputMessageHandler {
     }
 
     private SendMessage processUsersInput(Message inputMessage) {
-        Long user_id = inputMessage.getFrom().getId();
-        long chat_id = inputMessage.getChatId();
-        SendMessage replyToUser = null;
-        String valid_answer_option = localeMessageService.getMessage("option.іnitial-state-valid-option");
-
-        if (Objects.equals(inputMessage.getText(), valid_answer_option)) {
-            userDataCache.setUserCurrentBotState(user_id, BotState.MAIN_MENU_STATE);
-        } else {
-            replyToUser = messageService
-                    .getReplyMessage(String.valueOf(chat_id), "tip.initial-state");
-        }
-
-        return replyToUser;
+        return checkMessageForRightOption(inputMessage);
     }
 
     private SendMessage generateTip(Message inputMessage) {

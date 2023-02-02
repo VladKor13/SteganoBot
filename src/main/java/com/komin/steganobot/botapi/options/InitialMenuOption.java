@@ -6,9 +6,9 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum BackToMainMenuOption {
+public enum InitialMenuOption {
 
-    BACK_TO_MAIN_MENU_OPTION("option.back-to-main-menu-valid-option", BotState.MAIN_MENU_STATE);
+    START_OPTION("option.іnitial-state-valid-option", BotState.MAIN_MENU_STATE);
 
     private final String value;
     private final BotState followingBotState;

@@ -2,7 +2,6 @@ package com.komin.steganobot.botapi.handlers;
 
 import com.komin.steganobot.botapi.BotState;
 import com.komin.steganobot.botapi.InputMessageHandler;
-import com.komin.steganobot.botapi.options.BackToMainMenuOption;
 import com.komin.steganobot.builder.ReplyKeyboardMarkupBuilder;
 import com.komin.steganobot.cache.UserDataCache;
 import com.komin.steganobot.files_service.FilesService;
@@ -16,22 +15,13 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
 import java.io.IOException;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
 
 @Slf4j
 @Component
-public class HideTextImageUploadHandler implements InputMessageHandler {
-
-    private final UserDataCache userDataCache;
-    private final ReplyMessageService messageService;
-    private final LocaleMessageService localeMessageService;
+public class HideTextImageUploadHandler extends StateHandler implements InputMessageHandler {
 
     public HideTextImageUploadHandler(UserDataCache userDataCache, ReplyMessageService messageService, LocaleMessageService localeMessageService) {
-        this.userDataCache = userDataCache;
-        this.messageService = messageService;
-        this.localeMessageService = localeMessageService;
+        super(userDataCache, messageService, localeMessageService);
     }
 
     @Override
@@ -50,8 +40,8 @@ public class HideTextImageUploadHandler implements InputMessageHandler {
     }
 
     private SendMessage processUsersInput(Message inputMessage) {
-        long user_id = inputMessage.getFrom().getId();
-        long chat_id = inputMessage.getChatId();
+        long userID = inputMessage.getFrom().getId();
+        long chatID = inputMessage.getChatId();
 
         final Document document = inputMessage.getDocument();
         if (document != null) {
@@ -59,35 +49,19 @@ public class HideTextImageUploadHandler implements InputMessageHandler {
             final String fileName = document.getFileName();
             if (isPNG(fileName)) {
                 try {
-                    FilesService.downloadImage(fileId, String.valueOf(chat_id));
+                    FilesService.downloadImage(fileId, String.valueOf(chatID));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-                userDataCache.setUserCurrentBotState(user_id, BotState.HIDE_TEXT_STRING_UPLOAD_STATE);
-
+                userDataCache.setUserCurrentBotState(userID, BotState.HIDE_TEXT_STRING_UPLOAD_STATE);
                 return messageService
-                        .getReplyMessage(String.valueOf(chat_id), "reply.photo-was-uploaded-successfully-message");
+                        .getReplyMessage(String.valueOf(chatID), "reply.photo-was-uploaded-successfully-message");
+            } else {
+                return messageService
+                        .getReplyMessage(String.valueOf(chatID), "reply.wrong-file-extension-error-message");
             }
         }
-        Optional<BackToMainMenuOption> hideTextImageUploadOptionOptional =
-                Stream.of(BackToMainMenuOption.values())
-                      .filter(option -> Objects.equals(localeMessageService.getMessage(option.getValue()),
-                              inputMessage.getText()))
-                      .findFirst();
-
-        if (hideTextImageUploadOptionOptional.isEmpty()) {
-            if (inputMessage.getPhoto() != null && inputMessage.getText() == null) {
-                return messageService
-                        .getReplyMessage(String.valueOf(chat_id), "reply.upload-photo-as-file-error-message");
-            }
-            return messageService
-                    .getReplyMessage(String.valueOf(chat_id), "reply.no-such-option-error-message");
-        }
-        BackToMainMenuOption backToMainMenuOption = hideTextImageUploadOptionOptional.get();
-        userDataCache.setUserCurrentBotState(user_id, backToMainMenuOption.getBotState());
-
-        return null;
+        return checkMessageForRightOption(inputMessage);
     }
 
     private SendMessage generateTip(Message inputMessage, ReplyKeyboardMarkup replyKeyboardMarkup) {

@@ -2,7 +2,6 @@ package com.komin.steganobot.botapi.handlers;
 
 import com.komin.steganobot.botapi.BotState;
 import com.komin.steganobot.botapi.InputMessageHandler;
-import com.komin.steganobot.botapi.options.BackToMainMenuOption;
 import com.komin.steganobot.builder.ReplyKeyboardMarkupBuilder;
 import com.komin.steganobot.cache.UserDataCache;
 import com.komin.steganobot.service.LocaleMessageService;
@@ -13,22 +12,12 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Stream;
-
 @Slf4j
 @Component
-public class AboutInfoStateHandler implements InputMessageHandler {
-
-    private final UserDataCache userDataCache;
-    private final ReplyMessageService messageService;
-    private final LocaleMessageService localeMessageService;
+public class AboutInfoStateHandler extends StateHandler implements InputMessageHandler {
 
     public AboutInfoStateHandler(UserDataCache userDataCache, ReplyMessageService messageService, LocaleMessageService localeMessageService) {
-        this.userDataCache = userDataCache;
-        this.messageService = messageService;
-        this.localeMessageService = localeMessageService;
+        super(userDataCache, messageService, localeMessageService);
     }
 
     @Override
@@ -47,23 +36,7 @@ public class AboutInfoStateHandler implements InputMessageHandler {
     }
 
     private SendMessage processUsersInput(Message inputMessage) {
-        Long user_id = inputMessage.getFrom().getId();
-        long chat_id = inputMessage.getChatId();
-
-        Optional<BackToMainMenuOption> aboutMenuOptionOptional =
-                Stream.of(BackToMainMenuOption.values())
-                      .filter(option -> Objects.equals(localeMessageService.getMessage(option.getValue()),
-                              inputMessage.getText()))
-                      .findFirst();
-
-        if (aboutMenuOptionOptional.isEmpty()) {
-            return messageService
-                    .getReplyMessage(String.valueOf(chat_id), "reply.no-such-option-error-message");
-        }
-        BackToMainMenuOption backToMainMenuOption = aboutMenuOptionOptional.get();
-        userDataCache.setUserCurrentBotState(user_id, backToMainMenuOption.getBotState());
-
-        return null;
+        return checkMessageForRightOption(inputMessage);
     }
 
     private SendMessage generateTip(Message inputMessage, ReplyKeyboardMarkup replyKeyboardMarkup) {
