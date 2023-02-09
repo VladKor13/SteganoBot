@@ -29,7 +29,7 @@ public class LSBDecoder {
         }
         String result = new String(clearAllZeroes(ba));
 
-        if (result.startsWith("MSG")){
+        if (result.startsWith("MSG")) {
             return result.substring(3);
         } else {
             return null;

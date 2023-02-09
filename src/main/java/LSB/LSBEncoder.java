@@ -1,5 +1,7 @@
 package LSB;
 
+import com.komin.steganobot.files_service.FilesService;
+
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -72,9 +74,9 @@ public class LSBEncoder {
         return image;
     }
 
-    public static int evaluatePossibleCharQuantity(String chatId) {
-        String filename = "src/downloaded_files/" + chatId + "inputImage.png";
-        File initFile = new File(filename);
+    public static int evaluatePossibleCharQuantity(String chatID) {
+        String fileName = FilesService.getInputImageNameByChatId(chatID);
+        File initFile = new File(fileName);
         int result = 0;
         try {
             BufferedImage initImage = ImageIO.read(initFile);

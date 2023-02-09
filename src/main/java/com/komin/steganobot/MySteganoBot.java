@@ -2,6 +2,8 @@ package com.komin.steganobot;
 
 import LSB.LSBHandler;
 import com.komin.steganobot.botapi.TelegramFacade;
+import com.komin.steganobot.files_service.FilesService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.ResourceUtils;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
@@ -12,10 +14,10 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+@Slf4j
 public class MySteganoBot extends TelegramWebhookBot {
 
     private String webHookPath;
@@ -86,7 +88,7 @@ public class MySteganoBot extends TelegramWebhookBot {
                 try {
                     LSBHandler.encode(String.valueOf(chadId));
                     sendImageAsDocument(chadId, "");
-                    deleteUserCache(update);
+                    FilesService.deleteUserCache(update);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -107,7 +109,7 @@ public class MySteganoBot extends TelegramWebhookBot {
                         sendLongMessage(chatId, decodedText);
                     }
 
-                    deleteUserCache(update);
+                    FilesService.deleteUserCache(update);
                 } catch (IOException | TelegramApiException e) {
                     e.printStackTrace();
                 }
@@ -117,38 +119,17 @@ public class MySteganoBot extends TelegramWebhookBot {
 
     private void sendLongMessage(long chatId, String text) throws TelegramApiException {
         execute(new SendMessage(String.valueOf(chatId), "Повідомлення, що було приховане:"));
-        while (text.length() > 4096){
-            execute(new SendMessage(String.valueOf(chatId), text.substring(0,4095)));
+        while (text.length() > 4096) {
+            execute(new SendMessage(String.valueOf(chatId), text.substring(0, 4095)));
             text = text.substring(4096);
         }
         execute(new SendMessage(String.valueOf(chatId), text));
     }
 
-    private void deleteUserCache(Update update) {
-        String chatId = update.getMessage().getChatId().toString();
-        File file = new File("src/downloaded_files/"
-                + chatId + "resultImage.png");
-        if (file.delete()) {
-            //log here
-        }
-
-        file = new File("src/downloaded_files/"
-                + chatId + "inputImage.png");
-        if (file.delete()) {
-            //log here
-        }
-
-        file = new File("src/downloaded_files/"
-                + chatId + "inputText.txt");
-        if (file.delete()) {
-            //log here
-        }
-    }
-
     private void sendImageAsDocument(long chatId, String caption) {
         try {
-            InputFile image = new InputFile(ResourceUtils.getFile("src/downloaded_files/"
-                    + chatId + "resultImage.png"));
+            InputFile image = new InputFile(ResourceUtils.getFile(FilesService.downloadedFilesPath
+                    + chatId + "resultImage" + FilesService.lastFileExtension));
             SendDocument sendDocument = new SendDocument();
             sendDocument.setDocument(image);
             sendDocument.setChatId(chatId);

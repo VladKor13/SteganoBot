@@ -12,35 +12,36 @@ import javax.imageio.ImageIO;
 public class LSBHandler {
 
     public static void encode(String chatId) throws IOException {
-        String filename = "src/downloaded_files/" + chatId + "inputImage.png";
+        String filename = FilesService.downloadedFilesPath
+                + chatId + "inputImage" + FilesService.lastFileExtension;
         File initFile = new File(filename);
 
         BufferedImage initImage = ImageIO.read(initFile);
 
-        String pathToSave = "src/downloaded_files";
-        String resFileName = chatId + "resultImage.png";
-        String messageToEncode = FilesService.readTxt("src/downloaded_files/" + chatId + "inputText.txt", StandardCharsets.UTF_8);
+        String resFileName = chatId + "resultImage" + FilesService.lastFileExtension;
+        String messageToEncode = FilesService.readTxt(FilesService.downloadedFilesPath
+                + chatId + "inputText.txt", StandardCharsets.UTF_8);
 
         String bitMsg = LSBEncoder.encodeMessage(messageToEncode);
         BufferedImage newImage = LSBEncoder.encodeImage(bitMsg, initImage);
 
-        File dir = new File(pathToSave);
+        File dir = new File(FilesService.downloadedFilesPath);
 
         if (dir.exists() && dir.isDirectory() && dir.canWrite()) {
             File finalImage = new File(dir, resFileName);
-            ImageIO.write(newImage, "png", finalImage);
+            ImageIO.write(newImage, FilesService.lastFileExtension.substring(1), finalImage);
             System.out.println("New image saved!");
         } else {
-            throw new IOException("invalid");
+            throw new IOException("Invalid !");
         }
     }
 
     public static String decode(String chatId) throws IOException {
-        String filePath = "src/downloaded_files/" + chatId + "inputImage.png";
+        String filePath = FilesService.downloadedFilesPath + chatId + "inputImage" + FilesService.lastFileExtension;
         File outFile = new File(filePath);
         BufferedImage image = ImageIO.read(outFile);
         String bitMessage = LSBDecoder.decodeMessage(image);
-        return  LSBDecoder.getMessage(bitMessage);
+        return LSBDecoder.getMessage(bitMessage);
     }
 }
 

@@ -2,6 +2,7 @@ package com.komin.steganobot.files_service;
 
 import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,8 +14,14 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.Objects;
 
 public class FilesService {
+
+    public static String lastFileExtension;
+
+    public static final String downloadedFilesPath = "src/downloaded_files/";
 
     private static final String botToken = "5906682132:AAGWl8OOTDWdTLa9v-gEd5LinU-p-PZhKH4";
 
@@ -26,8 +33,7 @@ public class FilesService {
         JSONObject jResult = new JSONObject(getFileResponse);
         JSONObject path = jResult.getJSONObject("result");
         String filePath = path.getString("file_path");
-
-        File localFile = new File("src/downloaded_files/" + chatId + "inputImage.png");
+        File localFile = new File(downloadedFilesPath + chatId + "inputImage" + getFileExtension(filePath));
         InputStream is = new URL("https://api.telegram.org/file/bot" + botToken + "/" + filePath)
                 .openStream();
         FileUtils.copyInputStreamToFile(is, localFile);
@@ -38,7 +44,7 @@ public class FilesService {
 
     public static void saveUserString(String text, String chatId) {
         try {
-            FileUtils.writeStringToFile(new File("src/downloaded_files/" + chatId + "inputText.txt"),
+            FileUtils.writeStringToFile(new File(downloadedFilesPath + chatId + "inputText.txt"),
                     "MSG" + text,
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
@@ -56,4 +62,47 @@ public class FilesService {
         return new String(encoded, encoding);
     }
 
+    private static String getFileExtension(String filePath) {
+        StringBuilder result = new StringBuilder();
+        int charIdx = filePath.length() - 1;
+        while (filePath.charAt(charIdx) != '.') {
+            result.append(filePath.charAt(charIdx));
+            charIdx--;
+        }
+        result.append('.');
+        result.reverse();
+        lastFileExtension = result.toString();
+        return result.toString();
+    }
+
+    public static String getInputImageNameByChatId(String chatID) {
+        File directoryPath = new File(downloadedFilesPath);
+        List<File> files = List.of(Objects.requireNonNull(directoryPath.listFiles()));
+
+        return files.stream()
+                    .filter(file -> file.getName()
+                                        .startsWith(chatID + "inputImage"))
+                    .findFirst().get().toString().replaceAll("\\\\", "/");
+    }
+
+    public static void deleteUserCache(Update update) {
+        String chatId = update.getMessage().getChatId().toString();
+        File file = new File(downloadedFilesPath
+                + chatId + "resultImage" + lastFileExtension);
+        if (file.delete()) {
+            //log here
+        }
+
+        file = new File(downloadedFilesPath
+                + chatId + "inputImage" + lastFileExtension);
+        if (file.delete()) {
+            //log here
+        }
+
+        file = new File(downloadedFilesPath
+                + chatId + "inputText.txt");
+        if (file.delete()) {
+            //log here
+        }
+    }
 }

@@ -3,7 +3,7 @@ package com.komin.steganobot.botapi.handlers;
 import LSB.LSBEncoder;
 import com.komin.steganobot.botapi.BotState;
 import com.komin.steganobot.botapi.InputMessageHandler;
-import com.komin.steganobot.botapi.options.BackToMainMenuOption;
+import com.komin.steganobot.botapi.options.MenuOptions;
 import com.komin.steganobot.builder.ReplyKeyboardMarkupBuilder;
 import com.komin.steganobot.cache.UserDataCache;
 import com.komin.steganobot.files_service.FilesService;
@@ -51,8 +51,8 @@ public class HideTextStringUploadHandler extends StateHandler implements InputMe
         long userID = inputMessage.getFrom().getId();
         String chatID = inputMessage.getChatId().toString();
 
-        Optional<BackToMainMenuOption> hideTextStringUploadOptionOptional =
-                Stream.of(BackToMainMenuOption.values())
+        Optional<MenuOptions> hideTextStringUploadOptionOptional =
+                Stream.of(MenuOptions.values())
                       .filter(option -> Objects.equals(localeMessageService.getMessage(option.getValue()),
                               inputMessage.getText()))
                       .findFirst();
@@ -67,7 +67,7 @@ public class HideTextStringUploadHandler extends StateHandler implements InputMe
             return messageService
                     .getReplyMessage(chatID, "reply.text-has-too-many-chars-error-message");
         }
-        BackToMainMenuOption backToMainMenuOption = hideTextStringUploadOptionOptional.get();
+        MenuOptions backToMainMenuOption = hideTextStringUploadOptionOptional.get();
         userDataCache.setUserCurrentBotState(userID, backToMainMenuOption.getFollowingBotState());
 
         return null;

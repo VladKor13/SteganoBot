@@ -15,6 +15,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -47,7 +49,7 @@ public class UnpackTextImageUploadHandler extends StateHandler implements InputM
         if (document != null) {
             final String fileId = document.getFileId();
             final String fileName = document.getFileName();
-            if (isPNG(fileName)) {
+            if (isFileExtensionValid(fileName)) {
                 try {
                     FilesService.downloadImage(fileId, String.valueOf(chatID));
                 } catch (IOException e) {
@@ -82,8 +84,11 @@ public class UnpackTextImageUploadHandler extends StateHandler implements InputM
         return ReplyKeyboardMarkupBuilder.build(backToMainMenu);
     }
 
-    private boolean isPNG(String fileName) {
-        final String validFileExtension = ".png";
-        return fileName.toLowerCase().endsWith(validFileExtension);
+    private boolean isFileExtensionValid(String fileName) {
+        //Add necessary extensions here
+        ArrayList<String> validExtensions = new ArrayList<>(
+                List.of(".png")
+        );
+        return validExtensions.stream().anyMatch(extension -> fileName.toLowerCase().endsWith(extension));
     }
 }
