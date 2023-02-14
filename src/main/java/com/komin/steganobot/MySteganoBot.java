@@ -105,12 +105,19 @@ public class MySteganoBot extends TelegramWebhookBot {
                     if (decodedText == null) {
                         execute(new SendMessage(String.valueOf(chatId),
                                 "Цей контейнер не містить приховане повідомлення."));
+                        //TODO Refactor MessageServices
                     } else {
                         sendLongMessage(chatId, decodedText);
                     }
 
                     FilesService.deleteUserCache(update);
                 } catch (IOException | TelegramApiException e) {
+                    try {
+                        execute(new SendMessage(String.valueOf(chatId),
+                                "Помилка! Перевірте вхідні дані та спробуйте ще раз"));
+                    } catch (TelegramApiException ex) {
+                        throw new RuntimeException(ex);
+                    }
                     e.printStackTrace();
                 }
             }

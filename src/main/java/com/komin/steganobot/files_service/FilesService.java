@@ -1,7 +1,9 @@
 package com.komin.steganobot.files_service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.io.BufferedReader;
@@ -17,15 +19,22 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 public class FilesService {
 
     public static String lastFileExtension;
 
-    public static final String downloadedFilesPath = "src/downloaded_files/";
+    //TODO
+    public static final String downloadedFilesPath = "/src/downloaded_files/";
 
+    //TODO Get token from properties
     private static final String botToken = "5906682132:AAGWl8OOTDWdTLa9v-gEd5LinU-p-PZhKH4";
 
-    public static void downloadImage(String fileId, String chatId) throws IOException {
+    public static void downloadImage(Message inputMessage) throws IOException {
+        String fileId = inputMessage.getDocument().getFileId();
+        String chatId = inputMessage.getChatId().toString();
+        String userName = inputMessage.getFrom().getUserName();
+
         URL url = new URL("https://api.telegram.org/bot" + botToken + "/getFile?file_id=" + fileId);
         BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
         String getFileResponse = br.readLine();
@@ -38,15 +47,27 @@ public class FilesService {
                 .openStream();
         FileUtils.copyInputStreamToFile(is, localFile);
 
+        log.info("File {} from User: {}, chatId: {} was downloaded successfully",
+                "inputImage",
+                userName,
+                chatId);
+
         br.close();
         is.close();
     }
 
-    public static void saveUserString(String text, String chatId) {
+    public static void saveUserString(Message inputMessage) {
+        String text = inputMessage.getText();
+        String chatId = inputMessage.getChatId().toString();
         try {
             FileUtils.writeStringToFile(new File(downloadedFilesPath + chatId + "inputText.txt"),
                     "MSG" + text,
                     StandardCharsets.UTF_8);
+
+//            log.info("Text from User: {}, chatId: {} was saved to ",
+//                    "inputImage",
+//                    userName,
+//                    chatId);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -87,22 +108,33 @@ public class FilesService {
 
     public static void deleteUserCache(Update update) {
         String chatId = update.getMessage().getChatId().toString();
+        log.info("Cache deleting for User: {}, chatId: {} was STARTED",
+                update.getMessage().getFrom().getUserName(),
+                chatId);
+
         File file = new File(downloadedFilesPath
                 + chatId + "resultImage" + lastFileExtension);
-        if (file.delete()) {
-            //log here
-        }
+        logFileDeletingStatus(update, "resultImage", file.delete());
 
         file = new File(downloadedFilesPath
                 + chatId + "inputImage" + lastFileExtension);
-        if (file.delete()) {
-            //log here
-        }
+        logFileDeletingStatus(update, "inputImage", file.delete());
 
         file = new File(downloadedFilesPath
                 + chatId + "inputText.txt");
-        if (file.delete()) {
-            //log here
-        }
+        logFileDeletingStatus(update, "inputText.txt", file.delete());
+
+        log.info("Cache deleting for User: {}, chatId: {} was ENDED",
+                update.getMessage().getFrom().getUserName(),
+                chatId);
+
+    }
+
+    private static void logFileDeletingStatus(Update update, String fileName, boolean status) {
+        log.info("File {} from User: {}, chatId: {} was deleted: {}",
+                fileName,
+                update.getMessage().getFrom().getUserName(),
+                update.getMessage().getChatId(),
+                status);
     }
 }

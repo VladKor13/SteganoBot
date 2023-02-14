@@ -5,6 +5,7 @@ import com.komin.steganobot.botapi.options.MenuOptions;
 import com.komin.steganobot.cache.UserDataCache;
 import com.komin.steganobot.service.LocaleMessageService;
 import com.komin.steganobot.service.ReplyMessageService;
+import lombok.extern.slf4j.Slf4j;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 
@@ -12,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+@Slf4j
 public class StateHandler {
 
     final UserDataCache userDataCache;
@@ -38,17 +40,38 @@ public class StateHandler {
 
         if (stateMenuOptionOptional.isEmpty()) {
             if (inputMessage.getPhoto() != null && inputMessage.getText() == null) {
+                logReplyMessage(inputMessage, "reply.upload-photo-as-file-error-message");
                 return messageService
                         .getReplyMessage(String.valueOf(chatID), "reply.upload-photo-as-file-error-message");
             }
+            if (userDataCache.getUserCurrentBotState(userID).equals(BotState.INITIAL_STATE)) {
+                logReplyMessage(inputMessage, "tip.initial-state");
+                return messageService.getReplyMessage(String.valueOf(chatID), "tip.initial-state");
+            }
+
+            logReplyMessage(inputMessage, "reply.no-such-option-error-message");
             return messageService
                     .getReplyMessage(String.valueOf(chatID), "reply.no-such-option-error-message");
         }
 
         MenuOptions chosenOption = stateMenuOptionOptional.get();
         userDataCache.setUserCurrentBotState(userID, chosenOption.getFollowingBotState());
+        logBotStateChange(inputMessage, chosenOption.getFollowingBotState());
 
         return null;
     }
 
+    private void logReplyMessage(Message inputMessage, String reply) {
+        log.info("Reply for User: {}, chatId: {}, with text: {}",
+                inputMessage.getFrom().getUserName(),
+                inputMessage.getChatId(),
+                reply);
+    }
+
+    private void logBotStateChange(Message inputMessage, BotState botState) {
+        log.info("BotState for User: {}, chatId: {}, was changed to: {}",
+                inputMessage.getFrom().getUserName(),
+                inputMessage.getChatId(),
+                botState);
+    }
 }

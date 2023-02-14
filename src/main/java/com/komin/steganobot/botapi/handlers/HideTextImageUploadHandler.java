@@ -51,7 +51,7 @@ public class HideTextImageUploadHandler extends StateHandler implements InputMes
             final String fileName = document.getFileName();
             if (isFileExtensionValid(fileName)) {
                 try {
-                    FilesService.downloadImage(fileId, String.valueOf(chatID));
+                    FilesService.downloadImage(inputMessage);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

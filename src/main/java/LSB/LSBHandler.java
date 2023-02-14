@@ -39,7 +39,12 @@ public class LSBHandler {
     public static String decode(String chatId) throws IOException {
         String filePath = FilesService.downloadedFilesPath + chatId + "inputImage" + FilesService.lastFileExtension;
         File outFile = new File(filePath);
+
         BufferedImage image = ImageIO.read(outFile);
+        if (image == null){
+            //TODO Create custom exception
+            throw new IOException();
+        }
         String bitMessage = LSBDecoder.decodeMessage(image);
         return LSBDecoder.getMessage(bitMessage);
     }

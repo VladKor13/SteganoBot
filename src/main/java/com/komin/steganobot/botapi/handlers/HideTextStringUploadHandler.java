@@ -59,7 +59,7 @@ public class HideTextStringUploadHandler extends StateHandler implements InputMe
 
         if (hideTextStringUploadOptionOptional.isEmpty()) {
             if (isStringValid(inputMessage.getText(), chatID)) {
-                FilesService.saveUserString(inputMessage.getText(), chatID);
+                FilesService.saveUserString(inputMessage);
                 userDataCache.setUserCurrentBotState(userID, BotState.HIDE_TEXT_RESULT_UPLOAD_STATE);
                 return messageService
                         .getReplyMessage(chatID, "reply.text-was-uploaded-message");

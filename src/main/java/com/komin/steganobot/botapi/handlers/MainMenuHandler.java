@@ -42,7 +42,8 @@ public class MainMenuHandler extends StateHandler implements InputMessageHandler
 
     private SendMessage generateTip(Message inputMessage, ReplyKeyboardMarkup replyKeyboardMarkup) {
         long chat_id = inputMessage.getChatId();
-        SendMessage replyTip = new SendMessage(String.valueOf(chat_id), localeMessageService.getMessage("tip.main-menu-state"));
+        SendMessage replyTip = new SendMessage(String.valueOf(chat_id),
+                localeMessageService.getMessage("tip.main-menu-state"));
         if (replyKeyboardMarkup != null) {
             replyTip.enableMarkdown(true);
             replyTip.setReplyMarkup(replyKeyboardMarkup);
