@@ -47,13 +47,13 @@ public class FilesService {
                 .openStream();
         FileUtils.copyInputStreamToFile(is, localFile);
 
+        br.close();
+        is.close();
+
         log.info("File {} from User: {}, chatId: {} was downloaded successfully",
                 "inputImage",
                 userName,
                 chatId);
-
-        br.close();
-        is.close();
     }
 
     public static void saveUserString(Message inputMessage) {
@@ -64,10 +64,9 @@ public class FilesService {
                     "MSG" + text,
                     StandardCharsets.UTF_8);
 
-//            log.info("Text from User: {}, chatId: {} was saved to ",
-//                    "inputImage",
-//                    userName,
-//                    chatId);
+            log.info("Text from User: {}, chatId: {} was saved as inputText.txt",
+                    inputMessage.getFrom().getUserName(),
+                    chatId);
         } catch (IOException e) {
             e.printStackTrace();
         }

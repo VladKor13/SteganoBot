@@ -47,7 +47,6 @@ public class HideTextImageUploadHandler extends StateHandler implements InputMes
 
         final Document document = inputMessage.getDocument();
         if (document != null) {
-            final String fileId = document.getFileId();
             final String fileName = document.getFileName();
             if (isFileExtensionValid(fileName)) {
                 try {
@@ -55,10 +54,15 @@ public class HideTextImageUploadHandler extends StateHandler implements InputMes
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
                 userDataCache.setUserCurrentBotState(userID, BotState.HIDE_TEXT_STRING_UPLOAD_STATE);
+                logBotStateChange(inputMessage, BotState.HIDE_TEXT_STRING_UPLOAD_STATE);
+
+                logReplyMessage(inputMessage, "reply.photo-was-uploaded-successfully-message");
                 return messageService
                         .getReplyMessage(String.valueOf(chatID), "reply.photo-was-uploaded-successfully-message");
             } else {
+                logReplyMessage(inputMessage, "reply.wrong-file-extension-error-message");
                 return messageService
                         .getReplyMessage(String.valueOf(chatID), "reply.wrong-file-extension-error-message");
             }

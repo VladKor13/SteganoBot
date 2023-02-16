@@ -85,9 +85,13 @@ public class MySteganoBot extends TelegramWebhookBot {
         if (update.getMessage() != null) {
             long chadId = update.getMessage().getChatId();
             if (telegramFacade.isFilesReadyToEncode(chadId)) {
+                log.info("Files for User: {}, chatId: {}, are ready to be encoded",
+                        update.getMessage().getFrom().getUserName(),
+                        update.getMessage().getChatId());
                 try {
-                    LSBHandler.encode(String.valueOf(chadId));
-                    sendImageAsDocument(chadId, "");
+                    LSBHandler.encode(update);
+                    sendImageAsDocument(update, "");
+
                     FilesService.deleteUserCache(update);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -133,7 +137,8 @@ public class MySteganoBot extends TelegramWebhookBot {
         execute(new SendMessage(String.valueOf(chatId), text));
     }
 
-    private void sendImageAsDocument(long chatId, String caption) {
+    private void sendImageAsDocument(Update update, String caption) {
+        long chatId = update.getMessage().getChatId();
         try {
             InputFile image = new InputFile(ResourceUtils.getFile(FilesService.downloadedFilesPath
                     + chatId + "resultImage" + FilesService.lastFileExtension));
@@ -145,6 +150,9 @@ public class MySteganoBot extends TelegramWebhookBot {
         } catch (TelegramApiException | FileNotFoundException e) {
             e.printStackTrace();
         }
+        log.info("File resultImage for User: {}, chatId: {}, was sent successfully",
+                update.getMessage().getFrom().getUserName(),
+                update.getMessage().getChatId());
     }
 
     public void setWebHookPath(String webHookPath) {

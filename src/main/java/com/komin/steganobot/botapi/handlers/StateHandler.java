@@ -61,14 +61,14 @@ public class StateHandler {
         return null;
     }
 
-    private void logReplyMessage(Message inputMessage, String reply) {
+    void logReplyMessage(Message inputMessage, String reply) {
         log.info("Reply for User: {}, chatId: {}, with text: {}",
                 inputMessage.getFrom().getUserName(),
                 inputMessage.getChatId(),
                 reply);
     }
 
-    private void logBotStateChange(Message inputMessage, BotState botState) {
+    void logBotStateChange(Message inputMessage, BotState botState) {
         log.info("BotState for User: {}, chatId: {}, was changed to: {}",
                 inputMessage.getFrom().getUserName(),
                 inputMessage.getChatId(),

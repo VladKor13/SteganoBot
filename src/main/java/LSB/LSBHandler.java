@@ -1,6 +1,8 @@
 package LSB;
 
 import com.komin.steganobot.files_service.FilesService;
+import lombok.extern.slf4j.Slf4j;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -9,9 +11,11 @@ import java.nio.charset.StandardCharsets;
 
 import javax.imageio.ImageIO;
 
+@Slf4j
 public class LSBHandler {
 
-    public static void encode(String chatId) throws IOException {
+    public static void encode(Update update) throws IOException {
+        String chatId = update.getMessage().getChatId().toString();
         String filename = FilesService.downloadedFilesPath
                 + chatId + "inputImage" + FilesService.lastFileExtension;
         File initFile = new File(filename);
@@ -30,10 +34,13 @@ public class LSBHandler {
         if (dir.exists() && dir.isDirectory() && dir.canWrite()) {
             File finalImage = new File(dir, resFileName);
             ImageIO.write(newImage, FilesService.lastFileExtension.substring(1), finalImage);
-            System.out.println("New image saved!");
         } else {
             throw new IOException("Invalid !");
         }
+
+        log.info("File with encoded text for User: {}, chatId: {}, was created successfully",
+                update.getMessage().getFrom().getUserName(),
+                update.getMessage().getChatId());
     }
 
     public static String decode(String chatId) throws IOException {
