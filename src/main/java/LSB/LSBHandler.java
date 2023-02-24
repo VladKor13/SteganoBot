@@ -38,9 +38,9 @@ public class LSBHandler {
             throw new IOException("Invalid !");
         }
 
-        log.info("File with encoded text for User: {}, chatId: {}, was created successfully",
-                update.getMessage().getFrom().getUserName(),
-                update.getMessage().getChatId());
+        log.info("[{}] File with encoded text for User: {}, was created successfully",
+                update.getMessage().getChatId(),
+                update.getMessage().getFrom().getUserName());
     }
 
     public static String decode(String chatId) throws IOException {
@@ -48,7 +48,7 @@ public class LSBHandler {
         File outFile = new File(filePath);
 
         BufferedImage image = ImageIO.read(outFile);
-        if (image == null){
+        if (image == null) {
             //TODO Create custom exception
             throw new IOException();
         }

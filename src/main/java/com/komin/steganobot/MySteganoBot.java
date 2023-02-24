@@ -85,16 +85,16 @@ public class MySteganoBot extends TelegramWebhookBot {
         if (update.getMessage() != null) {
             long chadId = update.getMessage().getChatId();
             if (telegramFacade.isFilesReadyToEncode(chadId)) {
-                log.info("Files for User: {}, chatId: {}, are ready to be encoded",
-                        update.getMessage().getFrom().getUserName(),
-                        update.getMessage().getChatId());
+                log.info("[{}] Files for User: {} are ready to be encoded",
+                        update.getMessage().getChatId(),
+                        update.getMessage().getFrom().getUserName());
                 try {
                     LSBHandler.encode(update);
                     sendImageAsDocument(update, "");
-
                     FilesService.deleteUserCache(update);
                 } catch (IOException e) {
                     e.printStackTrace();
+                    //TODO CATCH
                 }
             }
         }
@@ -104,25 +104,36 @@ public class MySteganoBot extends TelegramWebhookBot {
         if (update.getMessage() != null) {
             long chatId = update.getMessage().getChatId();
             if (telegramFacade.isFilesReadyToDecode(chatId)) {
+                log.info("[{}] Files for User: {} are ready to be decoded",
+                        update.getMessage().getChatId(),
+                        update.getMessage().getFrom().getUserName());
                 try {
                     String decodedText = LSBHandler.decode(String.valueOf(chatId));
+                    log.info("[{}] File inputImage for User: {} was decoded successfully",
+                            update.getMessage().getChatId(),
+                            update.getMessage().getFrom().getUserName());
+
                     if (decodedText == null) {
                         execute(new SendMessage(String.valueOf(chatId),
                                 "Цей контейнер не містить приховане повідомлення."));
+
+                        log.info("[{}] Reply for User: {}, with text: {}",
+                                update.getMessage().getChatId(),
+                                update.getMessage().getFrom().getUserName(),
+                                "Цей контейнер не містить приховане повідомлення.");
                         //TODO Refactor MessageServices
                     } else {
                         sendLongMessage(chatId, decodedText);
+
+                        log.info("[{}] Reply for User: {}, with decoded text",
+                                update.getMessage().getChatId(),
+                                update.getMessage().getFrom().getUserName());
                     }
 
                     FilesService.deleteUserCache(update);
                 } catch (IOException | TelegramApiException e) {
-                    try {
-                        execute(new SendMessage(String.valueOf(chatId),
-                                "Помилка! Перевірте вхідні дані та спробуйте ще раз"));
-                    } catch (TelegramApiException ex) {
-                        throw new RuntimeException(ex);
-                    }
                     e.printStackTrace();
+                    //TODO CATCH
                 }
             }
         }
@@ -149,10 +160,11 @@ public class MySteganoBot extends TelegramWebhookBot {
             execute(sendDocument);
         } catch (TelegramApiException | FileNotFoundException e) {
             e.printStackTrace();
+            //TODO CATCH
         }
-        log.info("File resultImage for User: {}, chatId: {}, was sent successfully",
-                update.getMessage().getFrom().getUserName(),
-                update.getMessage().getChatId());
+        log.info("[{}] File resultImage for User: {} was sent successfully",
+                update.getMessage().getChatId(),
+                update.getMessage().getFrom().getUserName());
     }
 
     public void setWebHookPath(String webHookPath) {

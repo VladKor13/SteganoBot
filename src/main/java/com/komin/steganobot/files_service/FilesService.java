@@ -30,7 +30,7 @@ public class FilesService {
     //TODO Get token from properties
     private static final String botToken = "5906682132:AAGWl8OOTDWdTLa9v-gEd5LinU-p-PZhKH4";
 
-    public static void downloadImage(Message inputMessage) throws IOException {
+    public static boolean downloadImage(Message inputMessage) throws IOException {
         String fileId = inputMessage.getDocument().getFileId();
         String chatId = inputMessage.getChatId().toString();
         String userName = inputMessage.getFrom().getUserName();
@@ -38,10 +38,19 @@ public class FilesService {
         URL url = new URL("https://api.telegram.org/bot" + botToken + "/getFile?file_id=" + fileId);
         BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
         String getFileResponse = br.readLine();
+        //        System.out.println(url);
 
         JSONObject jResult = new JSONObject(getFileResponse);
+        boolean isOk = jResult.getBoolean("ok");
+        if (!isOk) {
+            return false;
+        }
         JSONObject path = jResult.getJSONObject("result");
         String filePath = path.getString("file_path");
+        int fileSize = path.getInt("file_size");
+        if (fileSize > 5e6) {
+            return false;
+        }
         File localFile = new File(downloadedFilesPath + chatId + "inputImage" + getFileExtension(filePath));
         InputStream is = new URL("https://api.telegram.org/file/bot" + botToken + "/" + filePath)
                 .openStream();
@@ -50,10 +59,11 @@ public class FilesService {
         br.close();
         is.close();
 
-        log.info("File {} from User: {}, chatId: {} was downloaded successfully",
+        log.info("[{}] File {} from User: {} was downloaded successfully",
+                chatId,
                 "inputImage",
-                userName,
-                chatId);
+                userName);
+        return true;
     }
 
     public static void saveUserString(Message inputMessage) {
@@ -64,9 +74,9 @@ public class FilesService {
                     "MSG" + text,
                     StandardCharsets.UTF_8);
 
-            log.info("Text from User: {}, chatId: {} was saved as inputText.txt",
-                    inputMessage.getFrom().getUserName(),
-                    chatId);
+            log.info("[{}] Text from User: {} was saved as inputText.txt",
+                    chatId,
+                    inputMessage.getFrom().getUserName());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -107,9 +117,9 @@ public class FilesService {
 
     public static void deleteUserCache(Update update) {
         String chatId = update.getMessage().getChatId().toString();
-        log.info("Cache deleting for User: {}, chatId: {} was STARTED",
-                update.getMessage().getFrom().getUserName(),
-                chatId);
+        log.info("[{}] Cache deleting for User: {}, was STARTED",
+                chatId,
+                update.getMessage().getFrom().getUserName());
 
         File file = new File(downloadedFilesPath
                 + chatId + "resultImage" + lastFileExtension);
@@ -123,17 +133,33 @@ public class FilesService {
                 + chatId + "inputText.txt");
         logFileDeletingStatus(update, "inputText.txt", file.delete());
 
-        log.info("Cache deleting for User: {}, chatId: {} was ENDED",
-                update.getMessage().getFrom().getUserName(),
-                chatId);
+        log.info("[{}] Cache deleting for User: {}, was ENDED",
+                chatId,
+                update.getMessage().getFrom().getUserName());
 
     }
 
     private static void logFileDeletingStatus(Update update, String fileName, boolean status) {
-        log.info("File {} from User: {}, chatId: {} was deleted: {}",
+        log.info("[{}] File {} from User: {}, was deleted: {}",
+                update.getMessage().getChatId(),
                 fileName,
                 update.getMessage().getFrom().getUserName(),
-                update.getMessage().getChatId(),
                 status);
+    }
+
+    public static boolean hasUserCacheForEncoding(long chatID) {
+        File directoryPath = new File(downloadedFilesPath);
+        List<File> files = List.of(Objects.requireNonNull(directoryPath.listFiles()));
+        return files.stream()
+                    .filter(file -> file.getName().startsWith(String.valueOf(chatID)))
+                    .toList().size() == 2;
+    }
+
+    public static boolean hasUserCacheForDecoding(long chatID) {
+        File directoryPath = new File(downloadedFilesPath);
+        List<File> files = List.of(Objects.requireNonNull(directoryPath.listFiles()));
+        return files.stream()
+                    .filter(file -> file.getName().startsWith(String.valueOf(chatID)))
+                    .toList().size() == 1;
     }
 }

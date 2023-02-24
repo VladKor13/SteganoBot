@@ -7,19 +7,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class UserDataCache implements DataCache {
+public class UserDataCache {
 
     // Add communication with DB here
     private final Map<Long, BotState> usersBotStates = new HashMap<>();
     private boolean newStateWasSet = false;
 
-    @Override
     public void setUserCurrentBotState(long userId, BotState botState) {
         usersBotStates.put(userId, botState);
         setNewStateWasSet(true);
     }
 
-    @Override
     public BotState getUserCurrentBotState(long userId) {
         BotState botState = usersBotStates.get(userId);
         if (botState == null) {

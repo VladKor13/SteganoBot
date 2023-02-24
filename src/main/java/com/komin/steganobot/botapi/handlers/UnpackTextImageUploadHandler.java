@@ -47,19 +47,29 @@ public class UnpackTextImageUploadHandler extends StateHandler implements InputM
 
         final Document document = inputMessage.getDocument();
         if (document != null) {
-            final String fileId = document.getFileId();
             final String fileName = document.getFileName();
             if (isFileExtensionValid(fileName)) {
                 try {
-                    FilesService.downloadImage(inputMessage);
+                    if (!FilesService.downloadImage(inputMessage)) {
+                        logReplyMessage(inputMessage, "reply.photo-size-too-big-error-message");
+                        return messageService
+                                .getReplyMessage(String.valueOf(chatID), "reply.photo-size-too-big-error-message");
+                    }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
+                    logReplyMessage(inputMessage, "reply.photo-downloading-error-message");
+                    return messageService
+                            .getReplyMessage(String.valueOf(chatID), "reply.photo-downloading-error-message");
                 }
-                userDataCache.setUserCurrentBotState(userID, BotState.UNPACK_TEXT_RESULT_UPLOAD_STATE);
 
+                userDataCache.setUserCurrentBotState(userID, BotState.UNPACK_TEXT_RESULT_UPLOAD_STATE);
+                logBotStateChange(inputMessage, BotState.UNPACK_TEXT_RESULT_UPLOAD_STATE);
+
+                logReplyMessage(inputMessage, "reply.photo-was-uploaded-successfully-message");
                 return messageService
                         .getReplyMessage(String.valueOf(chatID), "reply.photo-was-uploaded-successfully-message");
             } else {
+                logReplyMessage(inputMessage, "reply.wrong-file-extension-error-message");
                 return messageService
                         .getReplyMessage(String.valueOf(chatID), "reply.wrong-file-extension-error-message");
             }

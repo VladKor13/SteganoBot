@@ -1,6 +1,7 @@
 package com.komin.steganobot.botapi;
 
 import com.komin.steganobot.cache.UserDataCache;
+import com.komin.steganobot.files_service.FilesService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -24,9 +25,9 @@ public class TelegramFacade {
 
         Message message = update.getMessage();
         if (message != null) {
-            log.info("New message from User: {}, chatId: {}, with text: {}, hasPhoto: {}, hasDocument: {}",
-                    message.getFrom().getUserName(),
+            log.info("[{}] New message from User: {}, with text: {}, hasPhoto: {}, hasDocument: {}",
                     message.getChatId(),
+                    message.getFrom().getUserName(),
                     message.getText(),
                     message.hasPhoto(),
                     message.hasDocument());
@@ -55,13 +56,14 @@ public class TelegramFacade {
         return null;
     }
 
-    public boolean isFilesReadyToEncode(long chatId){
-        return userDataCache.getUserCurrentBotState(chatId)
-                            .equals(BotState.HIDE_TEXT_RESULT_UPLOAD_STATE);
+    public boolean isFilesReadyToEncode(long chatID) {
+        return userDataCache.getUserCurrentBotState(chatID).equals(BotState.HIDE_TEXT_RESULT_UPLOAD_STATE)
+                && FilesService.hasUserCacheForEncoding(chatID);
     }
 
-    public boolean isFilesReadyToDecode(long chatId){
-        return userDataCache.getUserCurrentBotState(chatId)
-                            .equals(BotState.UNPACK_TEXT_RESULT_UPLOAD_STATE);
+    public boolean isFilesReadyToDecode(long chatID) {
+        return userDataCache.getUserCurrentBotState(chatID)
+                            .equals(BotState.UNPACK_TEXT_RESULT_UPLOAD_STATE)
+                && FilesService.hasUserCacheForDecoding(chatID);
     }
 }

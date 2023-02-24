@@ -50,9 +50,16 @@ public class HideTextImageUploadHandler extends StateHandler implements InputMes
             final String fileName = document.getFileName();
             if (isFileExtensionValid(fileName)) {
                 try {
-                    FilesService.downloadImage(inputMessage);
+                    if (!FilesService.downloadImage(inputMessage)) {
+                        logReplyMessage(inputMessage, "reply.photo-size-too-big-error-message");
+                        return messageService
+                                .getReplyMessage(String.valueOf(chatID), "reply.photo-size-too-big-error-message");
+                    }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
+                    logReplyMessage(inputMessage, "reply.photo-downloading-error-message");
+                    return messageService
+                            .getReplyMessage(String.valueOf(chatID), "reply.photo-downloading-error-message");
                 }
 
                 userDataCache.setUserCurrentBotState(userID, BotState.HIDE_TEXT_STRING_UPLOAD_STATE);
