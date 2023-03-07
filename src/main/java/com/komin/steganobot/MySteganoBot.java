@@ -1,6 +1,7 @@
 package com.komin.steganobot;
 
 import LSB.LSBHandler;
+import com.komin.steganobot.botapi.BotState;
 import com.komin.steganobot.botapi.TelegramFacade;
 import com.komin.steganobot.files_service.FilesService;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -76,6 +78,7 @@ public class MySteganoBot extends TelegramWebhookBot {
         }
         try {
             execute(tipMessageToUser);
+            sendTipImage(update);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
@@ -135,6 +138,21 @@ public class MySteganoBot extends TelegramWebhookBot {
                     e.printStackTrace();
                     //TODO CATCH
                 }
+            }
+        }
+    }
+
+    private void sendTipImage(Update update) {
+        long chatID = update.getMessage().getChatId();
+        if (telegramFacade.getUserDataCache().getUserCurrentBotState(chatID).equals(BotState.ABOUT_INFO_STATE)) {
+            try {
+                InputFile image = new InputFile(ResourceUtils.getFile("src/source_images/example.jpg"));
+                SendPhoto sendPhoto = new SendPhoto();
+                sendPhoto.setPhoto(image);
+                sendPhoto.setChatId(chatID);
+                execute(sendPhoto);
+            } catch (TelegramApiException | FileNotFoundException e) {
+                e.printStackTrace();
             }
         }
     }

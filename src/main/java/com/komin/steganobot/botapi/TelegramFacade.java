@@ -25,12 +25,22 @@ public class TelegramFacade {
 
         Message message = update.getMessage();
         if (message != null) {
-            log.info("[{}] New message from User: {}, with text: {}, hasPhoto: {}, hasDocument: {}",
-                    message.getChatId(),
-                    message.getFrom().getUserName(),
-                    message.getText(),
-                    message.hasPhoto(),
-                    message.hasDocument());
+
+            if (userDataCache.getUserCurrentBotState(update.getMessage().getChatId())
+                             .equals(BotState.HIDE_TEXT_STRING_UPLOAD_STATE)) {
+                log.info("[{}] New message from User: {}, with text to hide, hasPhoto: {}, hasDocument: {}",
+                        message.getChatId(),
+                        message.getFrom().getUserName(),
+                        message.hasPhoto(),
+                        message.hasDocument());
+            } else {
+                log.info("[{}] New message from User: {}, with text: {}, hasPhoto: {}, hasDocument: {}",
+                        message.getChatId(),
+                        message.getFrom().getUserName(),
+                        message.getText(),
+                        message.hasPhoto(),
+                        message.hasDocument());
+            }
 
             replyMessage = handleInputMessage(message);
         }
@@ -65,5 +75,9 @@ public class TelegramFacade {
         return userDataCache.getUserCurrentBotState(chatID)
                             .equals(BotState.UNPACK_TEXT_RESULT_UPLOAD_STATE)
                 && FilesService.hasUserCacheForDecoding(chatID);
+    }
+
+    public UserDataCache getUserDataCache(){
+        return this.userDataCache;
     }
 }

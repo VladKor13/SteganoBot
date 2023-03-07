@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +20,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
+import javax.imageio.ImageIO;
+
 @Slf4j
 public class FilesService {
 
@@ -31,11 +34,11 @@ public class FilesService {
     private static final String botToken = "5906682132:AAGWl8OOTDWdTLa9v-gEd5LinU-p-PZhKH4";
 
     public static boolean downloadImage(Message inputMessage) throws IOException {
-        String fileId = inputMessage.getDocument().getFileId();
-        String chatId = inputMessage.getChatId().toString();
+        String fileID = inputMessage.getDocument().getFileId();
+        String chatID = inputMessage.getChatId().toString();
         String userName = inputMessage.getFrom().getUserName();
 
-        URL url = new URL("https://api.telegram.org/bot" + botToken + "/getFile?file_id=" + fileId);
+        URL url = new URL("https://api.telegram.org/bot" + botToken + "/getFile?file_id=" + fileID);
         BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
         String getFileResponse = br.readLine();
         //        System.out.println(url);
@@ -45,13 +48,14 @@ public class FilesService {
         if (!isOk) {
             return false;
         }
+
         JSONObject path = jResult.getJSONObject("result");
         String filePath = path.getString("file_path");
         int fileSize = path.getInt("file_size");
-        if (fileSize > 5e6) {
+        if (fileSize > 2e7) {
             return false;
         }
-        File localFile = new File(downloadedFilesPath + chatId + "inputImage" + getFileExtension(filePath));
+        File localFile = new File(downloadedFilesPath + chatID + "inputImage" + getFileExtension(filePath));
         InputStream is = new URL("https://api.telegram.org/file/bot" + botToken + "/" + filePath)
                 .openStream();
         FileUtils.copyInputStreamToFile(is, localFile);
@@ -59,8 +63,12 @@ public class FilesService {
         br.close();
         is.close();
 
+        if (ImageIO.read(localFile) == null){
+            throw new IOException();
+        }
+
         log.info("[{}] File {} from User: {} was downloaded successfully",
-                chatId,
+                chatID,
                 "inputImage",
                 userName);
         return true;
