@@ -3,4 +3,4 @@ services:
   bot-service:
     build: ./
     ports:
-      - 176.114.12.118:80:80
+      - 176.114.12.118:80
