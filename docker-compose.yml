@@ -3,4 +3,4 @@ services:
   bot-service:
     build: ./
     ports:
-      - 443:5000
+      - 80:80
