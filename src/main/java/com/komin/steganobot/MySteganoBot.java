@@ -16,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -146,7 +147,8 @@ public class MySteganoBot extends TelegramWebhookBot {
         long chatID = update.getMessage().getChatId();
         if (telegramFacade.getUserDataCache().getUserCurrentBotState(chatID).equals(BotState.ABOUT_INFO_STATE)) {
             try {
-                InputFile image = new InputFile(ResourceUtils.getFile("src/source_images/example.jpg"));
+                String imagePath = "src" + File.separator + "source_images" + File.separator + "example.jpg";
+                InputFile image = new InputFile(ResourceUtils.getFile(imagePath));
                 SendPhoto sendPhoto = new SendPhoto();
                 sendPhoto.setPhoto(image);
                 sendPhoto.setChatId(chatID);
