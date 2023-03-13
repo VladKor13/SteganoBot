@@ -79,7 +79,7 @@ public class MySteganoBot extends TelegramWebhookBot {
         }
         try {
             execute(tipMessageToUser);
-            sendTipImage(update);
+//            sendTipImage(update);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
