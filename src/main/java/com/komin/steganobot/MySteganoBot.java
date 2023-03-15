@@ -79,7 +79,7 @@ public class MySteganoBot extends TelegramWebhookBot {
         }
         try {
             execute(tipMessageToUser);
-//            sendTipImage(update);
+            sendTipImage(update);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
@@ -147,7 +147,7 @@ public class MySteganoBot extends TelegramWebhookBot {
         long chatID = update.getMessage().getChatId();
         if (telegramFacade.getUserDataCache().getUserCurrentBotState(chatID).equals(BotState.ABOUT_INFO_STATE)) {
             try {
-                File imagePath = new File( "example.jpg");
+                File imagePath = new File( "src/main/resources/example.jpg");
                 InputFile image = new InputFile(imagePath);
                 SendPhoto sendPhoto = new SendPhoto();
                 sendPhoto.setPhoto(image);
