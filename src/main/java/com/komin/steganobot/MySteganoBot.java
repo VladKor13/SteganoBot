@@ -5,6 +5,7 @@ import com.komin.steganobot.botapi.BotState;
 import com.komin.steganobot.botapi.TelegramFacade;
 import com.komin.steganobot.files_service.FilesService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.javapoet.ClassName;
 import org.springframework.util.ResourceUtils;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
@@ -147,7 +148,9 @@ public class MySteganoBot extends TelegramWebhookBot {
         long chatID = update.getMessage().getChatId();
         if (telegramFacade.getUserDataCache().getUserCurrentBotState(chatID).equals(BotState.ABOUT_INFO_STATE)) {
             try {
-                File imagePath = new File(String.valueOf(getClass().getResource("example.jpg")));
+                String imagePathStr = String.valueOf(this.getClass().getClassLoader().getResource("example.jpg"));
+                System.out.println("FILE PATH:" + imagePathStr);
+                File imagePath = new File(imagePathStr);
                 InputFile image = new InputFile(imagePath);
                 SendPhoto sendPhoto = new SendPhoto();
                 sendPhoto.setPhoto(image);
