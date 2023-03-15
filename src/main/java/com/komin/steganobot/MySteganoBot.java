@@ -147,7 +147,7 @@ public class MySteganoBot extends TelegramWebhookBot {
         long chatID = update.getMessage().getChatId();
         if (telegramFacade.getUserDataCache().getUserCurrentBotState(chatID).equals(BotState.ABOUT_INFO_STATE)) {
             try {
-                File imagePath = new File( "src/main/resources/example.jpg");
+                File imagePath = new File( "example.jpg");
                 InputFile image = new InputFile(imagePath);
                 SendPhoto sendPhoto = new SendPhoto();
                 sendPhoto.setPhoto(image);
