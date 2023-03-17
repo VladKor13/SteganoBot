@@ -20,6 +20,9 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 @Slf4j
 public class MySteganoBot extends TelegramWebhookBot {
@@ -148,15 +151,16 @@ public class MySteganoBot extends TelegramWebhookBot {
         long chatID = update.getMessage().getChatId();
         if (telegramFacade.getUserDataCache().getUserCurrentBotState(chatID).equals(BotState.ABOUT_INFO_STATE)) {
             try {
-                String imagePathStr = String.valueOf(this.getClass().getClassLoader().getResource("example.jpg"));
-                System.out.println("FILE PATH:" + imagePathStr);
-                File imagePath = new File(imagePathStr);
+                InputStream inputStream = getClass().getClassLoader().getResourceAsStream("example.jpg");
+                File imagePath = new File("example.png");
+                assert inputStream != null;
+                Files.copy(inputStream, imagePath.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 InputFile image = new InputFile(imagePath);
                 SendPhoto sendPhoto = new SendPhoto();
                 sendPhoto.setPhoto(image);
                 sendPhoto.setChatId(chatID);
                 execute(sendPhoto);
-            } catch (TelegramApiException e) {
+            } catch (TelegramApiException | IOException e) {
                 e.printStackTrace();
             }
         }
