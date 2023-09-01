@@ -5,7 +5,6 @@ import com.komin.steganobot.botapi.BotState;
 import com.komin.steganobot.botapi.TelegramFacade;
 import com.komin.steganobot.files_service.FilesService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.javapoet.ClassName;
 import org.springframework.util.ResourceUtils;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
